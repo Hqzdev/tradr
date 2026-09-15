@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="250" viewBox="0 0 1200 250" role="img" aria-labelledby="title desc">
+  <title id="title">Как работает TRADR</title>
+  <desc id="desc">Поток симуляции: цена рынка, решение агента, сделка и изменение капитала.</desc>
+  <rect width="1200" height="250" rx="26" fill="#FCFAFD"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+    <text x="56" y="55" fill="#131313" font-size="36" font-weight="700">Как работает симуляция</text>
+    <text x="56" y="84" fill="#77727D" font-size="18">Одинаковые рыночные данные проходят через разные стратегии.</text>
+    <g transform="translate(56 124)">
+      <g>
+        <rect width="238" height="76" rx="16" fill="#FFFFFF" stroke="#EDE8EF"/>
+        <text x="20" y="31" fill="#B51686" font-size="15" font-weight="600">01 · Рынок</text>
+        <text x="20" y="56" fill="#131313" font-size="18" font-weight="600">Цена акции на шаге</text>
+      </g>
+      <path d="M252 38 H312" stroke="#D8CEDD" stroke-width="2"/>
+      <path d="M304 30 L312 38 L304 46" fill="none" stroke="#D8CEDD" stroke-width="2"/>
+      <g transform="translate(326)">
+        <rect width="238" height="76" rx="16" fill="#FFFFFF" stroke="#EDE8EF"/>
+        <text x="20" y="31" fill="#B51686" font-size="15" font-weight="600">02 · Агент</text>
+        <text x="20" y="56" fill="#131313" font-size="18" font-weight="600">Купить, продать или ждать</text>
+      </g>
+      <path d="M578 38 H638" stroke="#D8CEDD" stroke-width="2"/>
+      <path d="M630 30 L638 38 L630 46" fill="none" stroke="#D8CEDD" stroke-width="2"/>
+      <g transform="translate(652)">
+        <rect width="238" height="76" rx="16" fill="#FFFFFF" stroke="#EDE8EF"/>
+        <text x="20" y="31" fill="#B51686" font-size="15" font-weight="600">03 · Сделка</text>
+        <text x="20" y="56" fill="#131313" font-size="18" font-weight="600">Симулированное исполнение</text>
+      </g>
+      <path d="M904 38 H964" stroke="#D8CEDD" stroke-width="2"/>
+      <path d="M956 30 L964 38 L956 46" fill="none" stroke="#D8CEDD" stroke-width="2"/>
+      <g transform="translate(978)">
+        <rect width="166" height="76" rx="16" fill="#FFF0FA"/>
+        <text x="20" y="31" fill="#B51686" font-size="15" font-weight="600">04 · Итог</text>
+        <text x="20" y="56" fill="#131313" font-size="18" font-weight="600">Капитал</text>
+      </g>
+    </g>
+  </g>
+</svg>

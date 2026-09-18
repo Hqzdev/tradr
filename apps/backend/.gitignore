@@ -1,0 +1,20 @@
+# Java / Maven / Gradle
+target/
+build/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Secrets
+.env
+
+# OS
+.DS_Store
+
+# Runtime logs
+logs/*.log

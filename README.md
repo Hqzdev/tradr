@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/readme/hero.svg" width="100%" alt="TRADR — учебная торговая симуляция с агентами и графиком рынка">
+  <img src="./design/assets/readme/hero.svg" width="100%" alt="TRADR — учебная торговая симуляция с агентами и графиком рынка">
 </p>
 
 <p align="center">
@@ -19,15 +19,15 @@ TRADR — дизайн-концепт учебной биржи. Пользов�
 ## Экраны
 
 <p align="center">
-  <img src="./design-previews/capsule/UfSgr.png" width="100%" alt="Экран обзора рынка TRADR с котировками и торговыми агентами">
+  <img src="./design/design-previews/capsule/UfSgr.png" width="100%" alt="Экран обзора рынка TRADR с котировками и торговыми агентами">
 </p>
 
 <p align="center">
-  <img src="./design-previews/capsule/t7xpPx.png" width="100%" alt="Экран терминала TRADR с графиком AAPL и формой заявки">
+  <img src="./design/design-previews/capsule/t7xpPx.png" width="100%" alt="Экран терминала TRADR с графиком AAPL и формой заявки">
 </p>
 
 <p align="center">
-  <img src="./design-previews/components/Y2D1l.png" width="100%" alt="Библиотека диалогов, уведомлений и состояний TRADR">
+  <img src="./design/design-previews/components/Y2D1l.png" width="100%" alt="Библиотека диалогов, уведомлений и состояний TRADR">
 </p>
 
 В макете подготовлены рынок, терминал, портфель, торговые агенты, настройка агентов, история сделок, симуляция в реальном времени, вход, регистрация, загрузка данных и библиотека компактных окон.
@@ -35,7 +35,7 @@ TRADR — дизайн-концепт учебной биржи. Пользов�
 ## Как это работает
 
 <p align="center">
-  <img src="./assets/readme/workflow.svg" width="100%" alt="Схема: данные рынка, решение агента, сделка и результат по капиталу">
+  <img src="./design/assets/readme/workflow.svg" width="100%" alt="Схема: данные рынка, решение агента, сделка и результат по капиталу">
 </p>
 
 1. Система получает цену акции на очередном шаге симуляции.
@@ -45,10 +45,25 @@ TRADR — дизайн-концепт учебной биржи. Пользов�
 
 ## Макет
 
-Редактируемый файл Pen: [design.pen](./design.pen).
+Редактируемый файл Pen: [design.pen](./design/design.pen).
 
 Откройте его в [Pen](https://pen.dev/) для просмотра всех экранов и компонентов.
 
+## Структура репозитория
+
+```
+tradr/
+  apps/
+    web/       # Next.js фронтенд (макет + постепенно живые экраны)
+    backend/    # Java/Spring Boot бэкенд — план в apps/backend/docs/
+  design/
+    design.pen        # редактируемый макет (Pen)
+    assets/            # картинки для README и т.п.
+    design-previews/    # экспортированные превью экранов
+    logo-export/        # экспорт логотипа
+  README.md
+```
+
 ## Статус
 
-Сейчас репозиторий содержит полный UI/UX-макет и дизайн-систему. Реализация интерактивной симуляции и торговой логики — следующий этап.
+`apps/web` — полный UI/UX-макет и дизайн-система (Next.js), пока на тестовых данных. `apps/backend` — Java/Spring Boot бэкенд, план разработки по фазам в `apps/backend/docs/` (`00-overview.md` — с чего начать). Реализация интерактивной симуляции и торговой логики на реальных данных — в процессе.

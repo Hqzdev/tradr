@@ -1,0 +1,37 @@
+# Локальная разработка. Поднимается через OrbStack (Docker CLI/daemon-совместим):
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Пока backend не написан — здесь только Postgres + Adminer (веб-морда для БД,
+# http://localhost:8081, система: PostgreSQL, сервер: postgres, пользователь/пароль
+# как ниже). Когда появится Dockerfile для самого Spring Boot приложения — сюда
+# добавится сервис `api`, собранный из этой же папки.
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: tradr-postgres
+    environment:
+      POSTGRES_DB: tradr
+      POSTGRES_USER: tradr
+      POSTGRES_PASSWORD: tradr_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - tradr_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tradr"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  adminer:
+    image: adminer
+    container_name: tradr-adminer
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  tradr_pg_data:

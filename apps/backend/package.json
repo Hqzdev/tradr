@@ -1,0 +1,11 @@
+{
+  "name": "tradr-backend",
+  "private": true,
+  "scripts": {
+    "dev": "set -a && . ./.env && set +a && exec ./mvnw spring-boot:run",
+    "test": "./mvnw test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

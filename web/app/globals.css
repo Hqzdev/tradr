@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: #f8f7fb;
+  color: #131313;
+}
+
+::selection {
+  background: #ffd3ef;
+  color: #131313;
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #eef0f4;
+  background-image: linear-gradient(
+    90deg,
+    #eef0f4 0px,
+    #f7f6fa 40px,
+    #eef0f4 80px
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* Interactive press feedback used across buttons / rows */
+.press-98:active {
+  transform: scale(0.98);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid #ff37c7;
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar, subtle */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #d9d7e2 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #d9d7e2;
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 120ms !important;
+    scroll-behavior: auto !important;
+  }
+}

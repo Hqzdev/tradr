@@ -1,3 +1,5 @@
-import { redirect } from "next/navigation";
+import TerminalScreen from "@/components/screens/TerminalScreen";
 
-export default function TerminalPage() { redirect("/market"); }
+export default function TerminalPage() {
+  return <TerminalScreen />;
+}

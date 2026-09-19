@@ -64,7 +64,7 @@ export default function AgentsListScreen() {
           </p>
           <h1 className="mt-2 text-heading font-[485] text-ink">Агенты</h1>
           <p className="mt-1.5 text-body text-steel">
-            Автоматические стратегии торгуют по заданным правилам — лимиты и риск задаёте вы.
+            Каждый агент получает личный сигнал и сам выбирает подходящую акцию.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -76,11 +76,10 @@ export default function AgentsListScreen() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatTile label="Всего агентов" value={loading ? "..." : String(agents.length)} caption="созданы вами" />
         <StatTile label="Активных" value={loading ? "..." : String(activeCount)} caption="готовы к работе" />
         <StatTile label="На паузе" value={loading ? "..." : String(pausedCount)} caption="не совершают действий" />
-        <StatTile label="Сделок" value="0" caption="появятся после работы агента" />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
@@ -110,7 +109,7 @@ export default function AgentsListScreen() {
               <tr className="text-caption text-steel">
                 <th className="pb-2 font-[485]">Агент</th>
                 <th className="pb-2 font-[485]">Стратегия</th>
-                <th className="pb-2 font-[485]">Риск</th>
+                <th className="pb-2 font-[485]">Сигнал</th>
                 <th className="pb-2 font-[485]">Статус</th>
               </tr>
             </thead>
@@ -143,7 +142,7 @@ export default function AgentsListScreen() {
                       <span className="text-body-sm text-ink">{strategyLabel[agent.strategy] ?? agent.strategy}</span>
                     </td>
                     <td className="border-t border-bone py-3 text-body-sm text-ink">
-                      {agent.riskLevel || "Не задан"}
+                      {signalLabel(agent.triggerPercent)}
                     </td>
                     <td className="border-t border-bone py-3">
                       <Badge tone={agent.status}>{statusLabel[agent.status]}</Badge>
@@ -174,4 +173,8 @@ function formatDate(value: string): string {
   return new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short", year: "numeric" }).format(
     new Date(value)
   );
+}
+
+function signalLabel(value: number): string {
+  return `${value > 0 ? "+" : ""}${value}%`;
 }

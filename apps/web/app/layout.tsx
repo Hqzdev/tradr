@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TRADR — учебная торговая симуляция",
-  description: "Рынок, терминал и портфель торговых агентов TRADR.",
+  title: "TRADR — учитесь видеть рынок",
+  description: "Учебная торговая платформа: наблюдайте за рынком и сравнивайте решения агентов без реальных денег.",
 };
 
 export default function RootLayout({

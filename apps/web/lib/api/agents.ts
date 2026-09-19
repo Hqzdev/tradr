@@ -8,16 +8,13 @@ export interface ApiAgent {
   strategy: string;
   status: AgentStatus;
   riskLevel: string | null;
+  triggerPercent: number;
   createdAt: string;
 }
 
 export interface CreateAgentInput {
   name: string;
   strategy: string;
-  riskLevel: string;
-  character: string;
-  budget: string;
-  skills: string;
 }
 
 export function listAgents(): Promise<ApiAgent[]> {

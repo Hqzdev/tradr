@@ -1,5 +1,4 @@
 import Sidebar from "@/components/Sidebar";
-import AgentsSectionNav from "@/components/AgentsSectionNav";
 import ProtectedApp from "@/components/auth/ProtectedApp";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -10,7 +9,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
       <main className="min-w-0 flex-1 py-2">
         <div className="mx-auto w-full max-w-[1200px] animate-fade-in">
-          <AgentsSectionNav />
           {children}
         </div>
       </main>

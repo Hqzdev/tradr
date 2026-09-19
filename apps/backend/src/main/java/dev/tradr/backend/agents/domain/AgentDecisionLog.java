@@ -8,7 +8,6 @@ import java.util.UUID;
 public class AgentDecisionLog {
  @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
  @Column(name="agent_id",nullable=false) private UUID agentId;
- @Column(name="simulation_id") private UUID simulationId;
  @Column(nullable=false) @Enumerated(EnumType.STRING) private AgentAction action;
  @Column(nullable=false) private String reason;
  @JdbcTypeCode(SqlTypes.JSON) @Column(name="rules_evaluated",columnDefinition="jsonb",nullable=false) private String rules;

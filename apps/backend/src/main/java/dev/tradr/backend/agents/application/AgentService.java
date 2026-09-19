@@ -1,24 +1,200 @@
 package dev.tradr.backend.agents.application;
-import dev.tradr.backend.agents.domain.*; import dev.tradr.backend.agents.repository.*; import dev.tradr.backend.agents.web.dto.*; import dev.tradr.backend.auth.repository.AccountRepository; import dev.tradr.backend.market.application.QuoteSnapshot; import dev.tradr.backend.market.domain.Instrument; import dev.tradr.backend.trading.application.TradingService; import dev.tradr.backend.trading.domain.OrderSide; import org.springframework.data.domain.PageRequest; import org.springframework.stereotype.Service; import org.springframework.transaction.annotation.Transactional; import java.math.BigDecimal; import java.util.*;
+
+import dev.tradr.backend.agents.domain.Agent;
+import dev.tradr.backend.agents.domain.AgentAction;
+import dev.tradr.backend.agents.domain.AgentConfig;
+import dev.tradr.backend.agents.domain.AgentDecisionLog;
+import dev.tradr.backend.agents.domain.AgentStatus;
+import dev.tradr.backend.agents.domain.AgentStrategy;
+import dev.tradr.backend.agents.domain.StrategyProfile;
+import dev.tradr.backend.agents.repository.AgentConfigRepository;
+import dev.tradr.backend.agents.repository.AgentDecisionLogRepository;
+import dev.tradr.backend.agents.repository.AgentRepository;
+import dev.tradr.backend.agents.web.dto.AgentResponse;
+import dev.tradr.backend.agents.web.dto.CreateAgentRequest;
+import dev.tradr.backend.agents.web.dto.DecisionResponse;
+import dev.tradr.backend.auth.repository.AccountRepository;
+import dev.tradr.backend.market.application.QuoteSnapshot;
+import dev.tradr.backend.market.domain.Instrument;
+import dev.tradr.backend.trading.application.TradingService;
+import dev.tradr.backend.trading.domain.OrderSide;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
 @Service
 public class AgentService {
- private final AgentRepository agents; private final AgentConfigRepository configs; private final AgentDecisionLogRepository logs; private final AccountRepository accounts; private final TradingService trading;
- public AgentService(AgentRepository agents,AgentConfigRepository configs,AgentDecisionLogRepository logs,AccountRepository accounts,TradingService trading){this.agents=agents;this.configs=configs;this.logs=logs;this.accounts=accounts;this.trading=trading;}
- @Transactional public AgentResponse create(UUID userId,CreateAgentRequest request){UUID accountId=accounts.findByUserId(userId).orElseThrow().getId(); Agent agent=agents.save(new Agent(accountId,request.name(),strategy(request.strategy()),value(request.riskLevel(),"medium"))); configs.save(new AgentConfig(agent.getId(),json(request.character()),json(request.budget()),json(request.skills()))); return response(agent);}
- @Transactional(readOnly=true) public List<AgentResponse> list(UUID userId){UUID accountId=accounts.findByUserId(userId).orElseThrow().getId(); return agents.findByAccountIdOrderByCreatedAtDesc(accountId).stream().map(this::response).toList();}
- @Transactional(readOnly=true) public AgentResponse get(UUID userId,UUID id){return response(owned(userId,id));}
- @Transactional public AgentResponse status(UUID userId,UUID id,String status){Agent agent=owned(userId,id); agent.setStatus(AgentStatus.valueOf(status.toUpperCase(Locale.ROOT))); return response(agent);}
- @Transactional public void delete(UUID userId,UUID id){agents.delete(owned(userId,id));}
- @Transactional(readOnly=true) public String config(UUID userId,UUID id,String field){owned(userId,id); AgentConfig config=configs.findById(id).orElseThrow(); return switch(field){case "character" -> config.getCharacter();case "budget" -> config.getBudget();case "skills" -> config.getSkills();default -> throw new IllegalArgumentException("Unknown config field");};}
- @Transactional(readOnly=true) public List<DecisionResponse> log(UUID userId,UUID id,int limit){owned(userId,id);return logs.findByAgentIdOrderByTimestampDesc(id,PageRequest.of(0,limit)).stream().map(this::decision).toList();}
- @Transactional public void onTick(Instrument instrument,QuoteSnapshot quote){for(Agent agent:agents.findByStatus(AgentStatus.ACTIVE)){AgentAction action=action(agent,instrument);String rules=rules(agent,instrument,action);UUID orderId=null;try{if(action!=AgentAction.WAIT)orderId=trading.executeAgentOrder(agent.getAccountId(),agent.getId(),instrument,action==AgentAction.BUY?OrderSide.BUY:OrderSide.SELL,new BigDecimal("0.10000000"),quote);}catch(RuntimeException exception){action=AgentAction.WAIT;} logs.save(new AgentDecisionLog(agent.getId(),action,reason(agent,action),rules,orderId));}}
- private AgentAction action(Agent agent,Instrument instrument){if(!instrument.getTicker().equals("AAPL")||!logs.findByAgentIdOrderByTimestampDesc(agent.getId(),PageRequest.of(0,1)).isEmpty())return AgentAction.WAIT; return agent.getStrategy()==AgentStrategy.AGGRESSIVE?AgentAction.BUY:AgentAction.WAIT;}
- private String rules(Agent agent,Instrument instrument,AgentAction action){return "[{\"label\":\"Инструмент: "+instrument.getTicker()+"\",\"ok\":true},{\"label\":\"Стратегия "+agent.getStrategy().name().toLowerCase(Locale.ROOT)+"\",\"ok\":"+(action!=AgentAction.WAIT)+"}]";}
- private String reason(Agent agent,AgentAction action){return action==AgentAction.BUY?agent.getName()+" увидел стартовый импульс и открыл маленькую позицию":"Агент ждёт следующего сигнала";}
- private Agent owned(UUID userId,UUID id){UUID accountId=accounts.findByUserId(userId).orElseThrow().getId();return agents.findByIdAndAccountId(id,accountId).orElseThrow();}
- private AgentStrategy strategy(String value){try{return AgentStrategy.valueOf(value.toUpperCase(Locale.ROOT));}catch(Exception exception){throw new IllegalArgumentException("strategy must be aggressive, careful or random");}}
- private String value(String value,String fallback){return value==null||value.isBlank()?fallback:value;}
- private String json(String value){return value==null||value.isBlank()?"{}":value;}
- private AgentResponse response(Agent agent){return new AgentResponse(agent.getId(),agent.getName(),agent.getStrategy().name().toLowerCase(Locale.ROOT),agent.getStatus().name().toLowerCase(Locale.ROOT),agent.getRiskLevel(),agent.getCreatedAt());}
- private DecisionResponse decision(AgentDecisionLog log){return new DecisionResponse(log.getId(),log.getAgentId(),log.getAction().name().toLowerCase(Locale.ROOT),log.getReason(),log.getRules(),log.getRelatedOrderId(),log.getTimestamp());}
+
+    private static final BigDecimal ORDER_QUANTITY = new BigDecimal("0.10000000");
+
+    private final AgentRepository agents;
+    private final AgentConfigRepository configs;
+    private final AgentDecisionLogRepository logs;
+    private final AccountRepository accounts;
+    private final TradingService trading;
+
+    public AgentService(
+            AgentRepository agents,
+            AgentConfigRepository configs,
+            AgentDecisionLogRepository logs,
+            AccountRepository accounts,
+            TradingService trading
+    ) {
+        this.agents = agents;
+        this.configs = configs;
+        this.logs = logs;
+        this.accounts = accounts;
+        this.trading = trading;
+    }
+
+    @Transactional
+    public AgentResponse create(UUID userId, CreateAgentRequest request) {
+        UUID accountId = accounts.findByUserId(userId).orElseThrow().getId();
+        AgentStrategy strategy = strategy(request.strategy());
+        StrategyProfile profile = strategy.profile();
+        BigDecimal signal = profile.randomSignal();
+        Agent agent = agents.save(new Agent(accountId, request.name(), strategy, profile.rangeLabel(), signal));
+        configs.save(new AgentConfig(agent.getId(), profileJson(profile, signal), "{}", "{}"));
+        return response(agent);
+    }
+
+    @Transactional(readOnly = true)
+    public List<AgentResponse> list(UUID userId) {
+        UUID accountId = accounts.findByUserId(userId).orElseThrow().getId();
+        return agents.findByAccountIdOrderByCreatedAtDesc(accountId).stream().map(this::response).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AgentResponse get(UUID userId, UUID id) {
+        return response(owned(userId, id));
+    }
+
+    @Transactional
+    public AgentResponse status(UUID userId, UUID id, String status) {
+        Agent agent = owned(userId, id);
+        agent.setStatus(AgentStatus.valueOf(status.toUpperCase(Locale.ROOT)));
+        return response(agent);
+    }
+
+    @Transactional
+    public void delete(UUID userId, UUID id) {
+        agents.delete(owned(userId, id));
+    }
+
+    @Transactional(readOnly = true)
+    public String config(UUID userId, UUID id, String field) {
+        owned(userId, id);
+        AgentConfig config = configs.findById(id).orElseThrow();
+        return switch (field) {
+            case "character" -> config.getCharacter();
+            case "budget" -> config.getBudget();
+            case "skills" -> config.getSkills();
+            default -> throw new IllegalArgumentException("Unknown config field");
+        };
+    }
+
+    @Transactional(readOnly = true)
+    public List<DecisionResponse> log(UUID userId, UUID id, int limit) {
+        owned(userId, id);
+        return logs.findByAgentIdOrderByTimestampDesc(id, PageRequest.of(0, limit)).stream().map(this::decision).toList();
+    }
+
+    @Transactional
+    public void onTick(Instrument instrument, QuoteSnapshot quote) {
+        for (Agent agent : agents.findByStatus(AgentStatus.ACTIVE)) {
+            if (hasPurchase(agent)) {
+                continue;
+            }
+            AgentAction action = action(agent, quote);
+            UUID orderId = null;
+            try {
+                if (action == AgentAction.BUY) {
+                    orderId = trading.executeAgentOrder(
+                            agent.getAccountId(),
+                            agent.getId(),
+                            instrument,
+                            OrderSide.BUY,
+                            ORDER_QUANTITY,
+                            quote
+                    );
+                }
+            } catch (RuntimeException exception) {
+                action = AgentAction.WAIT;
+            }
+            logs.save(new AgentDecisionLog(agent.getId(), action, reason(agent, instrument, action), rules(agent, instrument, quote, action), orderId));
+        }
+    }
+
+    private AgentAction action(Agent agent, QuoteSnapshot quote) {
+        StrategyProfile profile = agent.getStrategy().profile();
+        return profile.matches(quote.changePercent(), agent.getTriggerPercent()) ? AgentAction.BUY : AgentAction.WAIT;
+    }
+
+    private boolean hasPurchase(Agent agent) {
+        return logs.existsByAgentIdAndAction(agent.getId(), AgentAction.BUY);
+    }
+
+    private String rules(Agent agent, Instrument instrument, QuoteSnapshot quote, AgentAction action) {
+        StrategyProfile profile = agent.getStrategy().profile();
+        return "[{\"label\":\"Инструмент: " + instrument.getTicker() + "\",\"ok\":true},{\"label\":\"Изменение "
+                + quote.changePercent().stripTrailingZeros().toPlainString() + "% достигло сигнала " + signalLabel(agent.getTriggerPercent())
+                + "\",\"ok\":" + profile.matches(quote.changePercent(), agent.getTriggerPercent()) + "},{\"label\":\"Покупка\",\"ok\":" + (action == AgentAction.BUY) + "}]";
+    }
+
+    private String reason(Agent agent, Instrument instrument, AgentAction action) {
+        return action == AgentAction.BUY
+                ? agent.getName() + " выбрал " + instrument.getTicker() + " после достижения сигнала " + signalLabel(agent.getTriggerPercent())
+                : agent.getName() + " ждёт сигнал " + signalLabel(agent.getTriggerPercent());
+    }
+
+    private Agent owned(UUID userId, UUID id) {
+        UUID accountId = accounts.findByUserId(userId).orElseThrow().getId();
+        return agents.findByIdAndAccountId(id, accountId).orElseThrow();
+    }
+
+    private AgentStrategy strategy(String value) {
+        try {
+            return AgentStrategy.valueOf(value.toUpperCase(Locale.ROOT));
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("strategy must be aggressive, careful or random");
+        }
+    }
+
+    private String profileJson(StrategyProfile profile, BigDecimal signal) {
+        return "{\"name\":\"" + profile.name() + "\",\"minimumChange\":" + profile.minimumChange()
+                + ",\"maximumChange\":" + profile.maximumChange() + ",\"signal\":" + signal + "}";
+    }
+
+    private AgentResponse response(Agent agent) {
+        return new AgentResponse(
+                agent.getId(),
+                agent.getName(),
+                agent.getStrategy().name().toLowerCase(Locale.ROOT),
+                agent.getStatus().name().toLowerCase(Locale.ROOT),
+                agent.getRiskLevel(),
+                agent.getTriggerPercent(),
+                agent.getCreatedAt()
+        );
+    }
+
+    private DecisionResponse decision(AgentDecisionLog log) {
+        return new DecisionResponse(
+                log.getId(),
+                log.getAgentId(),
+                log.getAction().name().toLowerCase(Locale.ROOT),
+                log.getReason(),
+                log.getRules(),
+                log.getRelatedOrderId(),
+                log.getTimestamp()
+        );
+    }
+
+    private String signalLabel(BigDecimal signal) {
+        return (signal.signum() > 0 ? "+" : "") + signal.stripTrailingZeros().toPlainString() + "%";
+    }
 }

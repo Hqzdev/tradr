@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ChartCandlestickIcon,
@@ -25,6 +25,7 @@ import {
 import clsx from "@/lib/clsx";
 import { currentRelease } from "@/lib/changelog";
 import { currentUser, logout, savedUser, type AuthUser } from "@/lib/api/auth";
+import { listAgents, type ApiAgent } from "@/lib/api/agents";
 
 // Sidebar icons come from Hugeicons (@hugeicons/react +
 // @hugeicons/core-free-icons) — do not reintroduce lucide-react here,
@@ -44,7 +45,7 @@ const primaryNav = [
 // prefix, but they're switcher tabs of the same "agents" area (see
 // AgentsSectionNav) — so the sidebar should keep "Агенты" highlighted
 // there too, instead of dropping the active state entirely.
-const AGENTS_HUB_PREFIXES = ["/agents", "/teams", "/journal", "/catalog", "/simulation"];
+const AGENTS_HUB_PREFIXES = ["/agents", "/teams", "/journal", "/catalog"];
 
 const settingsNav = [
   { href: "/settings", label: "Профиль", icon: UserIcon },
@@ -64,6 +65,7 @@ export default function Sidebar() {
   const [changelogOpen, setChangelogOpen] = useState(false);
   const changelogRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<AuthUser | null>(savedUser());
+  const [agents, setAgents] = useState<ApiAgent[]>([]);
 
   // Sidebar lives in the shared layout, so it never remounts while you move
   // between pages — that's exactly why leaving Settings open used to look
@@ -79,6 +81,10 @@ export default function Sidebar() {
   useEffect(() => {
     currentUser().then(setUser).catch(() => setUser(null));
   }, []);
+
+  useEffect(() => {
+    listAgents().then(setAgents).catch(() => setAgents([]));
+  }, [pathname]);
 
   const handleLogout = async () => {
     await logout();
@@ -141,8 +147,8 @@ export default function Sidebar() {
               ? AGENTS_HUB_PREFIXES.some((prefix) => pathname?.startsWith(prefix))
               : pathname?.startsWith(href);
           return (
+            <Fragment key={href}>
             <Link
-              key={href}
               href={href}
               title={collapsed ? label : undefined}
               className={clsx(
@@ -160,7 +166,29 @@ export default function Sidebar() {
                 color={active ? "#B51686" : "#727078"}
               />
               {!collapsed && <span className="flex-1">{label}</span>}
+              {!collapsed && href === "/agents" && (
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-md bg-[#FCE7F6] px-1 text-[10px] font-medium text-[#B51686]">
+                  {agents.length}
+                </span>
+              )}
             </Link>
+            {href === "/agents" && !collapsed && agents.length > 0 && (
+              <div className="ml-5 mt-1 flex flex-col gap-1 border-l border-[#E7D6E2] pl-3">
+                {agents.map((agent) => (
+                  <Link
+                    key={agent.id}
+                    href={`/agents/${agent.id}`}
+                    className={clsx(
+                      "truncate py-1 text-[11px] transition-colors duration-150 hover:text-magenta-deep",
+                      pathname === `/agents/${agent.id}` ? "font-medium text-[#B51686]" : "text-[#77717B]"
+                    )}
+                  >
+                    {agent.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+            </Fragment>
           );
         })}
       </nav>

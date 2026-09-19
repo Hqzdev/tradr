@@ -88,7 +88,7 @@ export default function AgentDetailScreen({ agentId }: { agentId: string }) {
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <InfoCard label="Стратегия" value={strategyLabel[agent.strategy] ?? agent.strategy} />
-        <InfoCard label="Ограничения риска" value={agent.riskLevel || "Не заданы"} />
+        <InfoCard label="Личный сигнал" value={signalLabel(agent.triggerPercent)} />
         <InfoCard label="Создан" value={formatDate(agent.createdAt)} />
       </div>
 
@@ -117,4 +117,8 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long", year: "numeric" }).format(new Date(value));
+}
+
+function signalLabel(value: number): string {
+  return `${value > 0 ? "+" : ""}${value}%`;
 }

@@ -33,7 +33,7 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
-    private static final BigDecimal INITIAL_BALANCE = BigDecimal.ZERO.setScale(2);
+    private static final BigDecimal INITIAL_BALANCE = new BigDecimal("100000.00");
     private static final String DEFAULT_CURRENCY = "USD";
 
     private final UserRepository userRepository;

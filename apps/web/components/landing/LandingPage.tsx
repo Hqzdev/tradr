@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   ArrowDown01Icon,
@@ -29,6 +30,9 @@ import {
   IconTerminal,
   IconTrendUp,
 } from "@/components/icons";
+import { AnimatedMetric, IntroReveal, MotionPresence, usePrefersReducedMotion } from "@/components/landing/MotionPrimitives";
+import { getOrbMotionConfig, landingMotionPreset, type MetricRollerModel } from "@/lib/landingMotion";
+import { formatDemoPercent, heroOrbPlacements, stockCatalog, type HeroOrbPlacement } from "@/lib/stocks";
 
 const landingNavigation = [
   { href: "#hero", label: "Главная" },
@@ -43,57 +47,69 @@ const heroAgents = [
   { name: "Случайный", action: "Продаёт 12 AAPL", confidence: "—" },
 ] as const;
 
-const metrics = [
+const metrics: MetricRollerModel[] = [
   { label: "Активных агентов", value: "3 агента", active: false },
   { label: "Источник данных", value: "1 общий рынок", active: false },
   { label: "Финансовый риск", value: "0 ₽", active: false },
   { label: "Режим обучения", value: "24/7", active: true },
-] as const;
-
-function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setVisible(true);
-        observer.disconnect();
-      }
-    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <div ref={ref} className={`tradr-reveal ${visible ? "tradr-reveal--visible" : ""} ${className}`} style={{ "--reveal-delay": `${delay}ms` } as CSSProperties}>
-      {children}
-    </div>
-  );
-}
+];
 
 function ArrowLink({ href, children }: { href: string; children: ReactNode }) {
   return <Link className="tradr-arrow-link" href={href}>{children}<IconArrowUpRight aria-hidden="true" /></Link>;
 }
 
-function HeroOrb({ index, children }: { index: number; children: ReactNode }) {
-  return <span className={`tradr-orb tradr-orb--${index}`} aria-hidden="true"><span>{children}</span></span>;
+function StockOrb({ placement }: { placement: HeroOrbPlacement }) {
+  const stock = stockCatalog[placement.ticker];
+  const positive = stock.demoChangePercent >= 0;
+  const motion = getOrbMotionConfig(placement.id);
+
+  return (
+    <Link
+      className={`tradr-stock-orb tradr-stock-orb--${placement.id} tradr-stock-orb--label-${placement.labelSide}`}
+      href={`/market/${stock.ticker}`}
+      aria-label={`${stock.name}, ${stock.ticker}, ${positive ? "рост" : "снижение"} ${formatDemoPercent(stock.demoChangePercent)}. Открыть акцию`}
+      style={{
+        "--stock-color": stock.color,
+        "--float-duration": `${motion.floatDurationMs}ms`,
+        "--rotate-duration": `${motion.rotateDurationMs}ms`,
+      } as CSSProperties}
+    >
+      <span className="tradr-stock-enter">
+        <span className="tradr-stock-float">
+          <span className="tradr-stock-label" aria-hidden="true">
+            <strong>{stock.ticker}</strong>
+            <em className={positive ? "positive" : "negative"}>{positive ? "▲" : "▼"} {formatDemoPercent(stock.demoChangePercent)}</em>
+          </span>
+          <span className="tradr-stock-rotate" aria-hidden="true">
+            <span className="tradr-stock-core">
+              <Image src={stock.logoSrc} alt="" width={72} height={72} unoptimized className={stock.logoTone === "dark" ? "tradr-stock-logo--dark" : ""} />
+            </span>
+            <span className="tradr-stock-rings"><i /><i /></span>
+          </span>
+        </span>
+      </span>
+    </Link>
+  );
 }
 
-function HeroTicket() {
+function HeroTicket({ pageActive }: { pageActive: boolean }) {
   const [agentIndex, setAgentIndex] = useState(0);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
+    if (!pageActive || reducedMotion) return;
     const timer = window.setInterval(() => setAgentIndex((index) => (index + 1) % heroAgents.length), 4200);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [pageActive, reducedMotion]);
 
   const agent = heroAgents[agentIndex];
 
   return (
-    <div className="tradr-ticket" aria-label="Демонстрационная учебная заявка">
+    <div
+      className="tradr-ticket"
+      aria-label="Демонстрационная учебная заявка"
+      style={{ "--intro-delay": `${landingMotionPreset.heroTicketDelayMs}ms` } as CSSProperties}
+    >
       <div className="tradr-ticket-panel tradr-ticket-panel--top">
         <span className="tradr-ticket-label">Цена рынка</span>
         <div className="tradr-ticket-value"><strong>$192,45</strong><span className="tradr-symbol"><i>A</i>AAPL</span></div>
@@ -119,7 +135,7 @@ function MarketPreview() {
     ["TSLA", "Tesla", "$247,77", "−0,42%"],
     ["MSFT", "Microsoft", "$425,31", "+0,76%"],
   ];
-  return <div className="tradr-market-preview">{quotes.map(([ticker, name, price, change]) => <div key={ticker}><span className="tradr-asset-dot">{ticker[0]}</span><p><strong>{name}</strong><small>{ticker}</small></p><b>{price}</b><em className={change.startsWith("−") ? "negative" : ""}>{change}</em></div>)}</div>;
+  return <div className="tradr-market-preview">{quotes.map(([ticker, name, price, change], index) => <div key={ticker} style={{ "--preview-index": index } as CSSProperties}><span className="tradr-asset-dot">{ticker[0]}</span><p><strong>{name}</strong><small>{ticker}</small></p><b className="tradr-live-quote">{price}</b><em className={`tradr-live-quote ${change.startsWith("−") ? "negative" : ""}`}>{change}</em></div>)}</div>;
 }
 
 function TerminalPreview() {
@@ -172,6 +188,41 @@ function SafetyPreview() {
   );
 }
 
+function MobileMenu({ open, activeSection, onClose }: { open: boolean; activeSection: string; onClose: () => void }) {
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose, open]);
+
+  return (
+    <div className={`tradr-mobile-menu-layer ${open ? "tradr-mobile-menu-layer--open" : ""}`} aria-hidden={!open}>
+      <button className="tradr-mobile-menu-backdrop" type="button" aria-label="Закрыть меню" tabIndex={open ? 0 : -1} onClick={onClose} />
+      <div className="tradr-mobile-menu" id="tradr-mobile-menu" role="dialog" aria-label="Навигация по странице">
+        {landingNavigation.map((item) => (
+          <a
+            className={activeSection === item.href.slice(1) ? "tradr-mobile-menu-link--active" : ""}
+            href={item.href}
+            key={item.href}
+            tabIndex={open ? 0 : -1}
+            onClick={onClose}
+          >
+            {item.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const productCards = [
   { id: "market", eyebrow: "Рынок", title: "Смотрите. Сравнивайте. Решайте.", body: "Котировки и контекст рынка собраны в одном месте — без перегруженных экранов.", action: "Открыть рынок", href: "/market", tone: "blue", icon: <IconMarket />, visual: <MarketPreview /> },
   { id: "terminal", eyebrow: "Торговый терминал", title: "Просто. Наглядно. Безопасно.", body: "Создавайте учебные заявки и проверяйте идеи без риска для реальных средств.", action: "Открыть терминал", href: "/terminal", tone: "pink", icon: <IconTerminal />, visual: <TerminalPreview /> },
@@ -192,6 +243,8 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
   const [scrolled, setScrolled] = useState(false);
+  const [pageActive, setPageActive] = useState(true);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   useEffect(() => {
     const sections = landingNavigation
@@ -214,8 +267,15 @@ export default function LandingPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const updateVisibility = () => setPageActive(!document.hidden);
+    updateVisibility();
+    document.addEventListener("visibilitychange", updateVisibility);
+    return () => document.removeEventListener("visibilitychange", updateVisibility);
+  }, []);
+
   return (
-    <main className="tradr-landing">
+    <main className={`tradr-landing ${pageActive ? "" : "tradr-landing--paused"}`}>
       <nav className={`tradr-nav ${scrolled ? "tradr-nav--scrolled" : ""}`} aria-label="Основная навигация">
         <Link className="tradr-brand" href="#hero" aria-label="TRADR — главная"><IconLogo aria-hidden="true" /></Link>
         <div className="tradr-nav-links">
@@ -227,45 +287,53 @@ export default function LandingPage() {
         <div className="tradr-nav-actions"><Link className="tradr-nav-login" href="/login">Войти</Link><Link className="tradr-nav-cta" href="/register">Начать обучение</Link></div>
       </nav>
 
-      <nav className="tradr-mobile-nav" aria-label="Основная навигация">
+      <nav className={`tradr-mobile-nav ${scrolled ? "tradr-mobile-nav--scrolled" : ""}`} aria-label="Основная навигация">
         <Link className="tradr-brand" href="#hero" aria-label="TRADR — главная"><IconLogo aria-hidden="true" /></Link>
         <div className="tradr-mobile-nav-actions"><Link href="/login">Войти</Link><Link className="tradr-mobile-header-cta" href="/register">Начать обучение</Link>
-        <button className="tradr-menu-toggle" type="button" aria-expanded={menuOpen} aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"} onClick={() => setMenuOpen((open) => !open)}><HugeiconsIcon icon={menuOpen ? Cancel01Icon : Menu01Icon} strokeWidth={1.8} /></button>
+        <button className="tradr-menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="tradr-mobile-menu" aria-label={menuOpen ? "Закрыть меню" : "Открыть меню"} onClick={() => setMenuOpen((open) => !open)}><HugeiconsIcon icon={menuOpen ? Cancel01Icon : Menu01Icon} strokeWidth={1.8} /></button>
         </div>
-        {menuOpen && <div className="tradr-mobile-menu">{landingNavigation.map((item) => <a className={activeSection === item.href.slice(1) ? "tradr-mobile-menu-link--active" : ""} href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>{item.label}</a>)}</div>}
       </nav>
+      <MobileMenu open={menuOpen} activeSection={activeSection} onClose={closeMenu} />
 
       <div className="tradr-landing-content">
-      <section id="hero" className="tradr-hero" aria-labelledby="hero-title">
+      <MotionPresence className="tradr-hero-presence">
+      {(heroVisible) => <section id="hero" className="tradr-hero" aria-labelledby="hero-title">
         <div className="tradr-orbit-field">
-          <HeroOrb index={1}><IconTrendUp /></HeroOrb><HeroOrb index={2}><IconMarket /></HeroOrb><HeroOrb index={3}><IconAgents /></HeroOrb><HeroOrb index={4}><IconPortfolio /></HeroOrb>
-          <HeroOrb index={5}><IconShield /></HeroOrb><HeroOrb index={6}><IconTerminal /></HeroOrb><HeroOrb index={7}><IconShuffle /></HeroOrb><HeroOrb index={8}><IconHistory /></HeroOrb>
-          <HeroOrb index={9}><IconCheck /></HeroOrb><HeroOrb index={10}><IconLogo /></HeroOrb><HeroOrb index={11}><IconTrendUp /></HeroOrb><HeroOrb index={12}><IconAgents /></HeroOrb>
+          {heroOrbPlacements.map((placement) => <StockOrb key={placement.id} placement={placement} />)}
         </div>
         <div className="tradr-hero-content">
-          <h1 id="hero-title">Учись видеть рынок.<br className="mobile-break" /> Решай увереннее.</h1>
-          <HeroTicket />
-          <p>TRADR — безопасная учебная среда, где можно наблюдать за рынком<br className="desktop-only" /> и сравнивать решения агентов на одинаковых данных.</p>
+          <h1 id="hero-title">
+            {landingMotionPreset.heroIntro.map((step, index) => (
+              <span key={step.id}>
+                <IntroReveal delayMs={step.delayMs}>{step.text}</IntroReveal>
+                {step.mobileBreakAfter && <br className="mobile-break" />}
+                {index < landingMotionPreset.heroIntro.length - 1 && !step.mobileBreakAfter ? " " : null}
+                {step.mobileBreakAfter ? " " : null}
+              </span>
+            ))}
+          </h1>
+          <HeroTicket pageActive={pageActive && heroVisible} />
+          <p style={{ "--intro-delay": `${landingMotionPreset.heroBodyDelayMs}ms` } as CSSProperties}>TRADR — безопасная учебная среда, где можно наблюдать за рынком<br className="desktop-only" /> и сравнивать решения агентов на одинаковых данных.</p>
         </div>
-        <a className="tradr-scroll-cue" href="#about">Листайте, чтобы узнать больше<HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={1.8} aria-hidden="true" /></a>
-      </section>
+        <a className="tradr-scroll-cue" href="#about" style={{ "--intro-delay": `${landingMotionPreset.scrollCueDelayMs}ms` } as CSSProperties}>Листайте, чтобы узнать больше<HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={1.8} aria-hidden="true" /></a>
+      </section>}
+      </MotionPresence>
 
       <section id="about" className="tradr-about">
         <div className="tradr-about-grid">
-          <Reveal className="tradr-about-copy">
+          <div className="tradr-about-copy">
             <h2>Учебный рынок.<br />Настоящая логика.</h2>
             <div className="tradr-about-description"><p>TRADR собирает рынок, терминал, агентов и журнал решений в одной понятной среде.</p><p>Наблюдайте за стратегиями, проверяйте гипотезы и учитесь без реальных денег.</p><ArrowLink href="/register">Начать без риска</ArrowLink></div>
-          </Reveal>
-          <Reveal className="tradr-stats" delay={100}>
-            <div className="tradr-stats-title"><i />TRADR в цифрах</div>
-            <div className="tradr-stats-grid">{metrics.map((metric) => <div className={metric.active ? "tradr-stat tradr-stat--active" : "tradr-stat"} key={metric.label}><span>{metric.label}</span><strong>{metric.value}</strong></div>)}</div>
-          </Reveal>
+          </div>
+          <MotionPresence className="tradr-stats" once>
+            {(visible) => <><div className="tradr-stats-title"><i />TRADR в цифрах</div><div className="tradr-stats-grid">{metrics.map((metric) => <div className={metric.active ? "tradr-stat tradr-stat--active" : "tradr-stat"} key={metric.label}><span>{metric.label}</span><AnimatedMetric value={metric.value} visible={visible} /></div>)}</div></>}
+          </MotionPresence>
         </div>
       </section>
 
       <section id="products" className="tradr-products">
         <h2>Всё, чтобы научиться видеть рынок</h2>
-        <div className="tradr-product-grid">{productCards.map((card, index) => <Reveal className={`tradr-product-card tradr-product-card--${card.tone}`} delay={(index % 2) * 80} key={card.id}><div className="tradr-product-copy"><div className="tradr-card-eyebrow">{card.icon}<span>{card.eyebrow}</span></div><h3>{card.title}</h3><p>{card.body}</p><ArrowLink href={card.href}>{card.action}</ArrowLink></div>{card.visual}</Reveal>)}</div>
+        <div className="tradr-product-grid">{productCards.map((card) => <MotionPresence className={`tradr-product-card tradr-product-card--${card.tone}`} key={card.id}>{() => <><div className="tradr-product-copy"><div className="tradr-card-eyebrow">{card.icon}<span>{card.eyebrow}</span></div><h3>{card.title}</h3><p>{card.body}</p><ArrowLink href={card.href}>{card.action}</ArrowLink></div>{card.visual}</>}</MotionPresence>)}</div>
       </section>
 
       <section id="resources" className="tradr-resources" aria-labelledby="resources-title">

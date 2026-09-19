@@ -1,4 +1,5 @@
 import type { DocPage, DocSection } from "@/lib/docs/content";
+import { IconCheck, IconInfoCircle } from "@/components/icons";
 
 interface DocArticleProps {
   page: DocPage;
@@ -28,7 +29,7 @@ function BulletList({ items }: { items: string[] }) {
     <ul className="docs-bullet-list">
       {items.map((item) => (
         <li key={item}>
-          <span aria-hidden="true" />
+          <span aria-hidden="true"><IconCheck /></span>
           <p>{item}</p>
         </li>
       ))}
@@ -71,7 +72,7 @@ export default function DocArticle({ page }: DocArticleProps) {
             ) : null}
             {section.note ? (
               <aside className="docs-note">
-                <span className="docs-note-icon" aria-hidden="true">i</span>
+                <span className="docs-note-icon" aria-hidden="true"><IconInfoCircle /></span>
                 <div>
                   <strong>Важно</strong>
                   <p>{section.note}</p>

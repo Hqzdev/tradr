@@ -18,7 +18,7 @@ export default function ProtectedApp({ children }: { children: ReactNode }) {
       .then(() => setReady(true))
       .catch(() => {
         clearSession();
-        router.replace("/login");
+        router.replace(`/login?next=${encodeURIComponent(pathname ?? "/market")}`);
       });
   }, [pathname, router]);
 

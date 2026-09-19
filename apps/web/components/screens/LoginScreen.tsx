@@ -9,6 +9,7 @@ import Input from "@/components/ui/Input";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { ApiError } from "@/lib/api/client";
 import { login } from "@/lib/api/auth";
+import { authPath } from "@/lib/authRedirect";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -17,7 +18,7 @@ interface FormErrors {
   password?: string;
 }
 
-export default function LoginScreen() {
+export default function LoginScreen({ nextPath = "/market" }: { nextPath?: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,7 +39,7 @@ export default function LoginScreen() {
     setRequestError("");
     try {
       await login(email.trim(), password);
-      router.replace("/market");
+      router.replace(nextPath);
     } catch (error) {
       setRequestError(error instanceof ApiError && error.status === 401 ? "Неверный e-mail или пароль" : "Не удалось войти. Проверьте, что backend запущен.");
     } finally {
@@ -78,7 +79,7 @@ export default function LoginScreen() {
 
       <p className="mt-6 text-center text-body-sm text-steel">
         Нет аккаунта?{" "}
-        <Link href="/register" className="font-[535] text-magenta-deep transition-colors duration-150 hover:text-magenta">
+        <Link href={authPath("/register", nextPath)} className="font-[535] text-magenta-deep transition-colors duration-150 hover:text-magenta">
           Зарегистрироваться
         </Link>
       </p>

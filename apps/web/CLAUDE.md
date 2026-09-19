@@ -12,9 +12,9 @@ Icons come from **Hugeicons only** (`@hugeicons/react` + `@hugeicons/core-free-i
   don't reach for a paid/pro Hugeicons package), then either add it to the `huge()`
   wrapper table in `components/icons.tsx` (if it's used in more than one place) or
   import it directly where it's used, the same way `Sidebar.tsx` does.
-- Exception: `IconLogo` in `components/icons.tsx` is the hand-drawn TRADR wordmark
-  glyph sourced from `design.pen`, not a generic icon-set glyph — leave it as raw
-  SVG, don't swap it for a Hugeicons icon.
+- Exception: `IconLogo` in `components/icons.tsx` embeds the official TRADR mark
+  from `public/logo.png`, not a generic icon-set glyph. Keep every branded surface
+  tied to that single asset and do not swap it for a Hugeicons icon.
 
 ## Design fidelity
 

@@ -9,6 +9,7 @@ import Input from "@/components/ui/Input";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { ApiError } from "@/lib/api/client";
 import { register } from "@/lib/api/auth";
+import { authPath } from "@/lib/authRedirect";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,7 +20,7 @@ interface FormErrors {
   confirmPassword?: string;
 }
 
-export default function RegisterScreen() {
+export default function RegisterScreen({ nextPath = "/market" }: { nextPath?: string }) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -44,7 +45,7 @@ export default function RegisterScreen() {
     setRequestError("");
     try {
       await register(email.trim(), password, displayName.trim());
-      router.replace("/market");
+      router.replace(nextPath);
     } catch (error) {
       setRequestError(error instanceof ApiError && error.status === 409 ? "Этот e-mail уже зарегистрирован" : "Не удалось создать аккаунт. Проверьте, что backend запущен.");
     } finally {
@@ -101,7 +102,7 @@ export default function RegisterScreen() {
 
       <p className="mt-6 text-center text-body-sm text-steel">
         Уже есть аккаунт?{" "}
-        <Link href="/login" className="font-[535] text-magenta-deep transition-colors duration-150 hover:text-magenta">
+        <Link href={authPath("/login", nextPath)} className="font-[535] text-magenta-deep transition-colors duration-150 hover:text-magenta">
           Войти
         </Link>
       </p>

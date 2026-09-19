@@ -14,6 +14,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   CloudUploadIcon,
+  Copy01Icon,
   DotIcon,
   Download01Icon,
   ExpandIcon,
@@ -56,21 +57,12 @@ function huge(icon: IconSvgElement) {
   };
 }
 
-// The TRADR wordmark's glyph — the actual brand mark exported from
-// design.pen, not a swappable icon-set glyph, so it stays hand-drawn.
+// Keep every branded surface tied to the same exported TRADR asset.
+// The SVG wrapper preserves the icon API used throughout the interface.
 export function IconLogo(props: IconProps) {
   return (
     <svg viewBox="0 0 32 32" fill="none" {...props}>
-      <rect width="32" height="32" rx="9" fill="#FDECF8" />
-      <path
-        d="M10 13h9.2M14.4 9v10.2c0 1.7 1 2.8 2.6 2.8.7 0 1.2-.15 1.6-.35"
-        stroke="#FF37C7"
-        strokeWidth="2.1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M19.2 13 22.5 9.4" stroke="#F50DB4" strokeWidth="2.1" strokeLinecap="round" />
-      <path d="M20.6 8.6 22.7 9l.5 2.2" stroke="#F50DB4" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
+      <image href="/logo.png" x="-5" y="-5" width="42" height="42" preserveAspectRatio="xMidYMid meet" />
     </svg>
   );
 }
@@ -102,6 +94,7 @@ export const IconCandles = huge(ChartCandlestickIcon);
 export const IconMinus = huge(MinusSignIcon);
 export const IconEdit = huge(PencilEdit01Icon);
 export const IconUpload = huge(CloudUploadIcon);
+export const IconCopy = huge(Copy01Icon);
 export const IconMail = huge(Mail01Icon);
 export const IconStar = huge(StarIcon);
 export const IconNews = huge(NewspaperIcon);

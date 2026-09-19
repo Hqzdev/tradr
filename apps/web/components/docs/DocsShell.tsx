@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { usePathname } from "next/navigation";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { BubbleChatIcon } from "@hugeicons/core-free-icons";
 import { DocPage, docsGroups, docsPages, getAdjacentPages } from "@/lib/docs/content";
 import {
   IconArrowUpRight,
   IconChevronLeft,
   IconChevronRight,
+  IconCopy,
   IconFile,
   IconLogo,
   IconSearch,
@@ -23,6 +26,23 @@ interface SearchResult {
   page: DocPage;
   detail: string;
 }
+
+interface DocumentationSearchProps {
+  className?: string;
+  inputRef: RefObject<HTMLInputElement>;
+  onChange: (value: string) => void;
+  onSelect: () => void;
+  query: string;
+  results: SearchResult[];
+}
+
+const globalNavigation = [
+  { href: "/", label: "Главная" },
+  { href: "/docs", label: "Документация" },
+  { href: "/terminal", label: "Терминал" },
+  { href: "/agents", label: "Агенты" },
+  { href: "/teams", label: "Команда" },
+] as const;
 
 function normalize(value: string) {
   return value.toLocaleLowerCase("ru-RU").trim();
@@ -57,75 +77,175 @@ function searchDocumentation(query: string): SearchResult[] {
   return results.slice(0, 7);
 }
 
+function DocumentationSearch({ className = "", inputRef, onChange, onSelect, query, results }: DocumentationSearchProps) {
+  return (
+    <div className={`docs-search-wrap${className ? ` ${className}` : ""}`}>
+      <IconSearch aria-hidden="true" />
+      <input
+        aria-label="Поиск по документации"
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Поиск по документации"
+        ref={inputRef}
+        value={query}
+      />
+      {query ? (
+        <button aria-label="Очистить поиск" onClick={() => onChange("")} type="button"><IconX /></button>
+      ) : <kbd>⌘ K</kbd>}
+      {query.length >= 2 ? (
+        <div className="docs-search-results">
+          {results.length ? results.map((result) => {
+            const href = result.page.slug === "overview" ? "/docs" : `/docs/${result.page.slug}`;
+            return (
+              <Link href={href} key={result.page.slug} onClick={onSelect}>
+                <IconFile aria-hidden="true" />
+                <span>
+                  <strong>{result.page.title}</strong>
+                  <small>{result.detail}</small>
+                </span>
+                <IconChevronRight aria-hidden="true" />
+              </Link>
+            );
+          }) : <p>Ничего не найдено. Попробуйте имя файла или модуля.</p>}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function DocsShell({ page }: DocsShellProps) {
   const pathname = usePathname();
   const [query, setQuery] = useState("");
   const [mobileNavigationOpen, setMobileNavigationOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(page.sections[0]?.id ?? "");
+  const [pageCopied, setPageCopied] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [channelCopied, setChannelCopied] = useState(false);
+  const desktopSearchRef = useRef<HTMLInputElement>(null);
+  const mobileSearchRef = useRef<HTMLInputElement>(null);
   const results = useMemo(() => searchDocumentation(query), [query]);
   const adjacent = getAdjacentPages(page);
+
+  useEffect(() => {
+    setActiveSection(page.sections[0]?.id ?? "");
+    const sections = page.sections
+      .map((section) => document.getElementById(section.id))
+      .filter((section): section is HTMLElement => Boolean(section));
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
+      if (visible[0]?.target.id) setActiveSection(visible[0].target.id);
+    }, { rootMargin: "-132px 0px -58% 0px", threshold: [0, 0.1, 1] });
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [page]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        if (window.matchMedia("(max-width: 760px)").matches) {
+          setMobileSearchOpen(true);
+          window.setTimeout(() => mobileSearchRef.current?.focus(), 0);
+        } else {
+          desktopSearchRef.current?.focus();
+        }
+      }
+      if (event.key === "Escape") {
+        setQuery("");
+        setMobileNavigationOpen(false);
+        setMobileSearchOpen(false);
+        setHelpOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const closeSearch = () => {
+    setQuery("");
+    setMobileSearchOpen(false);
+  };
+
+  const openSearch = () => {
+    setHelpOpen(false);
+    if (window.matchMedia("(max-width: 760px)").matches) {
+      setMobileSearchOpen(true);
+      window.setTimeout(() => mobileSearchRef.current?.focus(), 0);
+      return;
+    }
+    desktopSearchRef.current?.focus();
+  };
+
+  const copyPageLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setPageCopied(true);
+      window.setTimeout(() => setPageCopied(false), 1800);
+    } catch {
+      setPageCopied(false);
+    }
+  };
+
+  const copyTeamChannel = async () => {
+    try {
+      await navigator.clipboard.writeText("#tradr-dev");
+      setChannelCopied(true);
+      window.setTimeout(() => setChannelCopied(false), 1800);
+    } catch {
+      setChannelCopied(false);
+    }
+  };
 
   return (
     <div className="tradr-docs">
       <header className="docs-header">
-        <div className="docs-brand">
-          <Link href="/" aria-label="На главную TRADR"><IconLogo /></Link>
-          <div>
-            <strong>Документация</strong>
-            <span>TRADR · версия 1.0</span>
+        <div className="docs-primary-bar">
+          <div className="docs-brand">
+            <Link href="/" aria-label="На главную TRADR"><IconLogo /></Link>
+            <div>
+              <strong>TRADR Документация</strong>
+              <span>Версия 1.0</span>
+            </div>
+          </div>
+
+          <nav className="docs-global-nav" aria-label="Навигация TRADR">
+            {globalNavigation.map((item) => (
+              <Link className={item.href === "/docs" ? "active" : ""} href={item.href} key={item.href}>{item.label}</Link>
+            ))}
+          </nav>
+
+          <div className="docs-header-actions">
+            <DocumentationSearch inputRef={desktopSearchRef} onChange={setQuery} onSelect={closeSearch} query={query} results={results} />
+            <Link className="docs-open-app" href="/market">Открыть TRADR <IconArrowUpRight /></Link>
+          </div>
+
+          <div className="docs-mobile-actions">
+            <button aria-expanded={mobileSearchOpen} aria-label="Открыть поиск" className="docs-mobile-search-toggle" onClick={() => { setMobileSearchOpen((value) => !value); setMobileNavigationOpen(false); }} type="button"><IconSearch /></button>
+            <button
+              aria-expanded={mobileNavigationOpen}
+              aria-label={mobileNavigationOpen ? "Закрыть содержание" : "Открыть содержание"}
+              className="docs-mobile-toggle"
+              onClick={() => { setMobileNavigationOpen((value) => !value); setMobileSearchOpen(false); }}
+              type="button"
+            >
+              {mobileNavigationOpen ? <IconX /> : <IconFile />}
+            </button>
           </div>
         </div>
 
-        <nav className="docs-header-nav" aria-label="Основные разделы документации">
-          <Link className={page.group === "Начало" ? "active" : ""} href="/docs">Обзор</Link>
-          <Link className={page.slug === "backend-architecture" ? "active" : ""} href="/docs/backend-architecture">Архитектура</Link>
-          <Link className={page.slug === "web-data" ? "active" : ""} href="/docs/web-data">API</Link>
-          <Link className={page.group === "Процессы" ? "active" : ""} href="/docs/team-workflow">Команда</Link>
-        </nav>
-
-        <div className="docs-header-actions">
-          <div className="docs-search-wrap">
-            <IconSearch aria-hidden="true" />
-            <input
-              aria-label="Поиск по документации"
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Поиск по документации"
-              value={query}
-            />
-            {query ? (
-              <button aria-label="Очистить поиск" onClick={() => setQuery("")} type="button"><IconX /></button>
-            ) : <kbd>⌘ K</kbd>}
-            {query.length >= 2 ? (
-              <div className="docs-search-results">
-                {results.length ? results.map((result) => (
-                  <Link href={`/docs/${result.page.slug}`} key={result.page.slug} onClick={() => setQuery("")}>
-                    <IconFile aria-hidden="true" />
-                    <span>
-                      <strong>{result.page.title}</strong>
-                      <small>{result.detail}</small>
-                    </span>
-                    <IconChevronRight aria-hidden="true" />
-                  </Link>
-                )) : <p>Ничего не найдено. Попробуйте имя файла или модуля.</p>}
-              </div>
-            ) : null}
+        {mobileSearchOpen ? (
+          <div className="docs-mobile-search-panel">
+            <DocumentationSearch inputRef={mobileSearchRef} onChange={setQuery} onSelect={closeSearch} query={query} results={results} />
           </div>
-          <Link className="docs-home-link" href="/">На главную</Link>
-          <Link className="docs-open-app" href="/market">Открыть TRADR <IconArrowUpRight /></Link>
-        </div>
-
-        <button
-          aria-expanded={mobileNavigationOpen}
-          aria-label={mobileNavigationOpen ? "Закрыть содержание" : "Открыть содержание"}
-          className="docs-mobile-toggle"
-          onClick={() => setMobileNavigationOpen((value) => !value)}
-          type="button"
-        >
-          {mobileNavigationOpen ? <IconX /> : <IconFile />}
-        </button>
+        ) : null}
       </header>
 
       <div className="docs-layout">
-        <aside className={`docs-sidebar${mobileNavigationOpen ? " open" : ""}`}>
+        <aside aria-label="Содержание документации" className={`docs-sidebar${mobileNavigationOpen ? " open" : ""}`}>
           <div className="docs-sidebar-intro">
             <strong>Содержание</strong>
             <span>12 разделов · простой русский</span>
@@ -150,12 +270,9 @@ export default function DocsShell({ page }: DocsShellProps) {
               })}
             </div>
           ))}
-          <div className="docs-sidebar-help">
-            <span>Не нашли ответ?</span>
-            <strong>Спросите команду</strong>
-            <small>#tradr-dev →</small>
-          </div>
         </aside>
+
+        {mobileNavigationOpen ? <button aria-label="Закрыть содержание" className="docs-sidebar-scrim" onClick={() => setMobileNavigationOpen(false)} type="button" /> : null}
 
         <main className="docs-main">
           <DocArticle page={page} />
@@ -178,13 +295,27 @@ export default function DocsShell({ page }: DocsShellProps) {
         <aside className="docs-toc">
           <strong>На этой странице</strong>
           <nav>
-            {page.sections.map((section, index) => (
-              <a className={index === 0 ? "active" : ""} href={`#${section.id}`} key={section.id}>{section.title}</a>
+            {page.sections.map((section) => (
+              <a className={activeSection === section.id ? "active" : ""} href={`#${section.id}`} key={section.id}>{section.title}</a>
             ))}
           </nav>
-          <div className="docs-toc-rule" />
-          <Link href="/docs/team-workflow">Правила изменений <IconArrowUpRight /></Link>
+          <button className="docs-copy-page" onClick={copyPageLink} type="button"><IconCopy />{pageCopied ? "Ссылка скопирована" : "Копировать ссылку"}</button>
         </aside>
+      </div>
+
+      <div className={`docs-help${helpOpen ? " open" : ""}`}>
+        {helpOpen ? (
+          <div className="docs-help-panel" role="dialog" aria-label="Помощь по документации">
+            <button aria-label="Закрыть помощь" className="docs-help-close" onClick={() => setHelpOpen(false)} type="button"><IconX /></button>
+            <strong>Нужна помощь?</strong>
+            <p>Найдите ответ в документации или передайте команде название канала.</p>
+            <button onClick={openSearch} type="button"><IconSearch />Найти ответ</button>
+            <button className="secondary" onClick={copyTeamChannel} type="button"><IconCopy />{channelCopied ? "Канал скопирован" : "Скопировать #tradr-dev"}</button>
+          </div>
+        ) : null}
+        <button aria-expanded={helpOpen} className="docs-help-trigger" onClick={() => setHelpOpen((value) => !value)} type="button">
+          <HugeiconsIcon icon={BubbleChatIcon} strokeWidth={1.8} />Помощь
+        </button>
       </div>
     </div>
   );

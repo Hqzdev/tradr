@@ -53,6 +53,23 @@ export interface TradeStats {
   openOrders: number;
 }
 
+export interface OrderPreview {
+  quantity: number;
+  gross: number;
+  commission: number;
+  total: number;
+  valid: boolean;
+}
+
+export interface CreateOrderInput {
+  ticker: string;
+  side: "buy" | "sell";
+  orderType: "market" | "limit";
+  quantity?: string;
+  amount?: string;
+  limitPrice?: string;
+}
+
 export function getPortfolio(): Promise<Portfolio> {
   return apiFetch<Portfolio>("/portfolio");
 }
@@ -71,4 +88,23 @@ export function getTrades(): Promise<Trade[]> {
 
 export function getTradeStats(): Promise<TradeStats> {
   return apiFetch<TradeStats>("/trades/stats");
+}
+
+export function previewOrder(input: {
+  ticker: string;
+  side: "buy" | "sell";
+  anchor: "quantity" | "amount";
+  value: string;
+}): Promise<OrderPreview> {
+  return apiFetch<OrderPreview>("/orders/preview", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export function createOrder(input: CreateOrderInput): Promise<Order> {
+  return apiFetch<Order>("/orders", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }

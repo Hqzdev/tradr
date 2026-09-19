@@ -113,13 +113,13 @@ export default function Sidebar() {
     <aside
       className={clsx(
         "flex shrink-0 flex-col gap-4 rounded-[28px] border border-[#EDE8EF] bg-white p-3 transition-[width] duration-200 ease-out",
-        collapsed ? "w-[76px]" : "w-48",
+        collapsed ? "w-full lg:w-[76px]" : "w-full lg:w-48",
         settingsOpen ? "animate-sidebar-expand" : "animate-sidebar-collapse"
       )}
       style={{ boxShadow: "0px 4px 20px rgba(37,17,41,0.04)" }}
     >
       <div className={clsx("flex items-center", collapsed ? "flex-col gap-2 py-1" : "h-11 gap-2.5 px-2.5")}>
-        <Image src="/logo.png" alt="TRADR" width={40} height={40} className="shrink-0" />
+        <Image src="/logo.png" alt="TRADR" width={40} height={40} className="shrink-0 scale-[1.3]" />
         {!collapsed && (
           <>
             <span className="text-[15px] font-semibold tracking-[-0.3px] text-ink">TRADR</span>

@@ -1,132 +1,163 @@
-# Design QA — TRADR landing
+# TRADR — design QA
 
-## Comparison target
+## Evidence
 
-- Source visual truth:
-  - hero: `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-038ce7af-767c-470a-9880-2a8fe9e4139f.png` — 4832×2576 px;
-  - overview and metrics: `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-2ee37cd1-76f3-4a5b-9d1a-620ad4764991.png` — 4700×2444 px;
-  - product grid: `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-0b643bac-304e-479b-8abd-4a810f38f488.png` and `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-d69b97d8-c601-482f-b405-3852cb33f5b7.png` — 4700×2444 px;
-  - resources and footer: `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-e858c53f-43d6-470e-aec1-d62301e58cc2.png` — 4700×2444 px.
-- Browser-rendered implementation evidence:
-  - `/private/tmp/tradr-landing-reference-viewport.png`;
-  - `/private/tmp/tradr-landing-about.png`;
-  - `/private/tmp/tradr-landing-products.png`;
-  - `/private/tmp/tradr-landing-footer.png`;
-  - normalized hero comparison: `/private/tmp/tradr-landing-comparison.png`.
-- Desktop comparison viewport: 1536×720 CSS px, device scale 1.
-- Mobile verification viewport: 390×844 CSS px, device scale 1.
-- Source browser chrome was excluded from layout judgment. The hero source page area was cropped and scaled to 1536×720 before the side-by-side comparison.
-- State: public unauthenticated landing page, light theme, completed entrance animations.
+- Source visual truth: `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-e79b26e1-3f42-469c-a664-bac37e98e189.png`
+- Source pixels: `4832 × 2576`, including browser chrome and an approximately `2300 CSS px` wide page viewport at Retina density.
+- Browser-rendered implementation: `/Users/yaroslavfairfieldd/Desktop/tradr/qa/docs-desktop-current.png`
+- Implementation pixels and CSS viewport: `1117 × 897`, density `1x`, Codex in-app Browser.
+- Route and state: `/docs/team-workflow`, light theme, page top, help closed, search empty.
+- Density normalization: not applied because the available implementation viewport does not match the wide reference viewport.
 
 ## Full-view comparison
 
-- The implementation now follows the reference sequence: sticky compact navigation, viewport-height centered hero, asymmetric narrative/metrics section, six tall cards in a 2×3 grid, four resource rows, and the split footer.
-- Hero content uses the same center axis, compact two-panel widget, soft CTA, supporting caption, bottom scroll cue, and edge-weighted blurred objects.
-- Product content and imagery are original TRADR interfaces while preserving the reference card proportions, padding, pastel zoning, and visual density.
+The available desktop capture confirms the intended hierarchy: a two-level sticky header, independent left navigation, compact centered article, rounded TRADR controls, pale-magenta active states, and a floating help action. At `1117 × 897`, the wide global navigation and right table of contents correctly collapse, so this capture cannot validate their reference-positioned desktop state.
 
-## Required fidelity surfaces
+## Focused comparison
 
-- Typography: Inter is used throughout with tight tracking and intermediate display weights. Display, body, UI, and metric scales reproduce the source hierarchy without cramped desktop copy.
-- Spacing and rhythm: desktop max width is 1120px; stats are 2×2; cards are two columns with 14px gutters and tall portrait-like proportions. Mobile collapses to one column.
-- Colors and tokens: white canvas, near-black text, subtle grey borders, magenta actions, one green active metric, and the same blue/pink/violet/mint/orange/magenta card progression.
-- Image and icon quality: third-party marks are absent. TRADR's existing mark and Hugeicons provide the product imagery; blurred hero objects remain deliberately defocused like the source.
-- Copy and content: all labels, metrics, cards, routes, resources, and disclaimers describe TRADR rather than Uniswap.
-- Interaction: the hero agent changes automatically and from its button; navigation, CTA links, anchors, and mobile menu are functional.
-- Accessibility: semantic headings, labeled controls, visible focus, keyboard-operable links/buttons, practical mobile targets, and reduced-motion behavior are present.
+- Header: first and second navigation levels are visually separate; search and CTA no longer collide at medium width.
+- Article: title scale, vertical rhythm, section numbering, lists, file tables, notes, and light code surfaces match the density of the reference while retaining TRADR tokens.
+- Left navigation: fixed rail, compact group labels, and rounded active row match the reference structure.
+- Assets: the supplied TRADR mark is used; visible icons come from Hugeicons. No reference branding or imagery was copied.
+
+## Interaction checks
+
+- Search returns Russian documentation results for `миграции`.
+- `⌘K` focuses the documentation search.
+- The help control opens a labelled dialog and its “Найти ответ” action focuses search.
+- All 12 documentation routes were generated successfully by the production build.
+- Browser console: no errors in the checked desktop state.
+
+## Findings
+
+- [P2] Exact breakpoint captures are unavailable.
+  - Location: responsive documentation shell.
+  - Evidence: the in-app Browser exposes a fixed `1117 × 897` viewport and rejected the isolated `390 × 844` preview for browser-security reasons.
+  - Impact: the required `1920 × 1080`, `1440 × 900`, `1024 × 768`, and `390 × 844` visual comparisons cannot be asserted from browser-rendered evidence.
+  - Fix: capture those four sizes with an explicitly approved viewport-capable browser runner, then compare the wide desktop state and mobile drawer against the source.
 
 ## Comparison history
 
-### Iteration 3 — navigation correction
+1. Initial desktop capture: global navigation collided with the search area at medium width.
+2. Fix: global navigation now collapses below `1280px`; search and CTA remain aligned.
+3. Post-fix evidence: `qa/docs-desktop-current.png` shows a clean two-level header and independent content rail at `1117 × 897`.
+4. Readability pass: article copy, navigation, metadata, tables, code, notes, right-side contents and mobile headings were increased by roughly `15–25%`; the updated capture preserves the same column geometry without clipping or crowding.
 
-- Removed the temporary vertical public sidebar after the follow-up direction.
-- Restored a horizontal desktop header with the TRADR mark, four landing anchors, login, and registration CTA.
-- Removed Market, Terminal, Portfolio, and Agents from both desktop and mobile public navigation; the application routes themselves remain intact.
-- Verified scroll-aware active states for `#hero`, `#about`, `#products`, and `#resources`, including the compact mobile menu at 390×844.
+## Follow-up polish
 
-### Iteration 4 — centered header capsule
+- No P3 items recorded before the missing breakpoint captures are completed.
 
-- Consolidated the logo, landing anchors, login, and registration CTA into one centered floating capsule.
-- Removed the visible `TRADR` wordmark from desktop and mobile navigation while preserving the accessible logo label.
-- Verified the 390×844 capsule with logo, login, registration CTA, and menu control on one row without overflow.
+previous result (documentation scope): blocked
 
-### Iteration 1
+---
 
-- [P1] The previous implementation used an original split-dashboard hero rather than the centered reference composition.
-- [P1] The product area contained three asymmetrical cards rather than the source's six-card 2×3 grid.
-- Fix: rebuilt the page around the supplied screenshots and replaced the hero, metrics, product grid, resources, and footer composition.
+## Interactive hero and instrument page — 0.0.4
 
-### Iteration 2
+### Evidence
 
-- [P2] Product cards were too short, causing the market preview to overlap the CTA.
-- [P2] Anchor captures placed section headings too close to the sticky navigation.
-- Fix: increased desktop card height to 620px and mobile card height to 700px; added sticky-header scroll margins and section top spacing.
-- Post-fix evidence: `/private/tmp/tradr-landing-products.png` and the 390×844 browser capture show separated copy/preview zones and no horizontal overflow.
+- Hero reference: `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-7632a7a8-096b-4f45-898f-b3df9db9e3be.png`.
+- Browser implementation: `http://localhost:3000/`, default Codex in-app Browser viewport `1280 × 720`.
+- Instrument implementation: `http://localhost:3000/market/AAPL`, authenticated local QA account, real synthetic backend data.
+- Responsive states: exact browser viewport overrides `820 × 900` and `390 × 844`.
 
-## Final checks
+### Reference comparison
 
-- Production build and TypeScript validation pass after the horizontal-header update.
-- Desktop hero, metrics, six cards, resources, and footer inspected in the in-app browser.
-- Centered capsule header inspected at rest and while scrolled; anchor highlighting follows the visible section.
-- Mobile hero, open menu, first product card, and document geometry inspected at 390×844.
-- Mobile document width equals the 390px viewport; no horizontal overflow.
-- Agent-switch interaction updates decision, confidence, and action content.
-- Browser console: no warnings or errors.
-- Remaining P0/P1/P2 findings: none.
-- P3: Russian hero copy is longer than the English source, so its line length differs while retaining the source font scale and center axis.
+- Calm state reproduces the reference geometry: white field, softly blurred colored instruments around a centered headline and ticket, with clear central whitespace.
+- Keyboard focus (same visual state as hover) stops the active orb, removes blur, scales the logo, draws three concentric rings, and reveals the ticker plus positive/negative percent.
+- Focused TSLA was repositioned after comparison so its rings and label do not cover the hero headline or central ticket.
+- The asset page keeps the TRADR sidebar while following the reference composition: sticky instrument header, large chart on the left, sticky trading card on the right, metrics/about/activity below.
+
+### Responsive checks
+
+- `1280 × 720`: 18 visible orbs; chart and trading panel form a two-column desktop composition.
+- `820 × 900`: 12 visible orbs; hero remains centered with no horizontal overflow.
+- `390 × 844`: 6 visible orbs; `documentElement.scrollWidth === clientWidth === 390`; chart stays readable and the trading form stacks beneath it.
+- `prefers-reduced-motion` disables floating animation.
+
+### Interaction and data checks
+
+- All orbs are labelled links and keyboard reachable; touch/click navigates directly to the canonical ticker route.
+- Anonymous AAPL navigation resolves to `/login?next=%2Fmarket%2FAAPL`; login returns to AAPL.
+- External `next=https://evil.example` is reduced to the internal `/market` fallback and is preserved safely between login and registration.
+- Real backend candles load for `1м / 5м / 15м / 1ч / 1Д`; line/candle controls and price/volume tooltip are present.
+- Market buy and market sell both returned “Сделка исполнена”; balance, position, metrics, candles and trades refreshed.
+- A buy limit below market returned “Заявка выставлена”.
+- An oversized market buy returned the Russian insufficient-funds error and retained the entered value.
+- Unknown ticker `/market/XXXX` renders the dedicated 404 with a market return link.
+
+### Verification
+
+- Frontend production build: passed (40 routes generated).
+- Backend suite with local Postgres: passed (`10` tests, `0` failures, `0` errors), including all `7` order calculation tests.
+- Browser console in final checked states: no new application errors.
+
+### Findings
+
+- No open P1–P3 findings for the 0.0.4 hero, auth-return, instrument detail, trading, or responsive scope.
 
 final result: passed
 
 ---
 
-# Design QA — рабочие страницы документации
+## Documentation secondary navigation removal — 2026-09-19
 
-## Проверенный результат
+### Evidence
 
-- Реализован маршрут `/docs` и 11 связанных подразделов в `apps/web`.
-- Источник визуального направления: предоставленная светлая система с белым холстом, Inter, near-black типографикой, magenta-акцентом, тонкими границами, pill-поиском и радиусами 16–20px.
-- Desktop проверен в Codex in-app browser: фиксированный header, левое содержание, центральная статья и правое оглавление не перекрываются.
-- Mobile проверен при 390×844: ширина документа и viewport совпадают (`390px`), горизонтальный скролл отсутствует.
-- Поиск `JwtService` находит файл, показывает русское объяснение и открывает `/docs/backend-auth`.
-- Внутренняя страница авторизации проверена визуально: активный пункт, заголовок, таблица файлов и оглавление отображаются корректно.
-- Консоль браузера: ошибок и предупреждений нет.
-- `npm run build`: успешно; сгенерировано 12 статических docs-страниц. Предупреждение оптимизатора Google Fonts связано с недоступностью внешней таблицы стилей во время сборки и не ломает интерфейс.
-- Все пользовательские заголовки и навигационные группы написаны по-русски; английский оставлен только в именах файлов, технологий и API-терминах.
+- Removal reference: `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-4ba74fd8-84a4-43f1-ba46-229f14b3434c.png`.
+- Browser implementation: `qa/docs-without-secondary-nav.png`, route `/docs/team-workflow`, `1117 × 720` viewport.
 
-## Содержание
+### Comparison
 
-- Обзор и запуск.
-- Карта репозитория.
-- Маршруты, компоненты и данные frontend.
-- Архитектура, авторизация, рынок, торговля и агенты backend.
-- Миграции, тесты и технические документы.
-- Командные правила и критерии готовности задачи простыми словами.
+- The complete «Обзор / Репозиторий / Интерфейс / Сервер / Процессы» row and its divider are absent.
+- The article, fixed left navigation and sticky offsets begin directly below the remaining primary header; no empty `44px` band remains.
+- Search, primary CTA, left documentation navigation and floating help remain visible and unchanged.
+
+### Verification
+
+- Browser accessibility tree contains no secondary navigation links.
+- No visible clipping, overlap or orphaned spacing in the checked desktop state.
+- TypeScript and whitespace checks passed.
 
 final result: passed
 
 ---
 
-# Design QA — TRADR documentation screens
+## Full Uniswap motion transfer — 0.0.5
 
-## Scope
+### Evidence
 
-- Pencil source: `design/design.pen`.
-- Reference: `/var/folders/yb/rjltyvqj4r53lq1zg_s081fc0000gn/T/codex-clipboard-5c1dd73f-7fbe-4ac5-8c19-bc2b9341e0e5.png`.
-- Four 1440×1024 screens are placed in a 2×2 block beside the existing product screens:
-  - `Docs 01 — Обзор` at 47310×0;
-  - `Docs 02 — Инфраструктура` at 48910×0;
-  - `Docs 03 — Функции и API` at 47310×1184;
-  - `Docs 04 — Код и задачи` at 48910×1184.
+- Live reference inspected at `https://app.uniswap.org/?intro=true`; TRADR keeps its own copy, colors, local logos and destinations.
+- Runtime implementation inspected at `http://localhost:3010/` in the Codex in-app Browser.
+- Frame-by-frame measurements and responsive results: `qa/landing-motion-0.0.5.md`.
+- Browser screenshots were captured for intro-start, settled desktop, focused TSLA, `1440 × 900`, `1280 × 720`, `834 × 1112`, `390 × 844`, the open mobile menu and the metrics/product sections. Browser security policy blocked exporting those runtime captures as local PNGs, so the QA manifest records the measured evidence without substituting fabricated images.
 
-## Visual and content checks
+### Motion comparison
 
-- Shared documentation shell is consistent across all screens: compact global header, grouped left navigation, wide article column, and right in-page table of contents.
-- TRADR styling is preserved through Inter typography, near-black text, white surfaces, subtle borders, magenta active states, and restrained violet, green, blue, and orange semantic accents.
-- Overview includes audience guidance, four-step setup, executable command block, repository map, and a clear next-section link.
-- Infrastructure includes an explicit service/data-flow diagram, service contract table, environment states, owners, and a boundary rule.
-- Functions/API includes base URL and authentication state, endpoint registry, stability labels, request/response controls, and a JSON example.
-- Code/tasks includes engineering principles, change workflow, Definition of Done, and a three-column task board with priorities and owners.
-- Typography and vertical rhythm were checked at fit-to-frame zoom in Pencil. Long titles were shortened after inspection to prevent lead-text overlap.
-- All four frames were reopened from disk and visually inspected in Pencil after the final write.
-- Pencil document parses as valid JSON; no duplicate replacement docs frames remain.
+- The three heading segments use the measured `100px` rise, `1s` duration, source easing and `0/100/200ms` delays. Body, ticket and scroll cue follow at `300/400/2000ms`.
+- The calm orb state uses approximately `6px` blur and `.5` opacity. Each orb has an independent five-second vertical float and an `11–15s` counter-rotation.
+- Keyboard focus was checked for both signs: TSLA exposes `▼ 0,62%`, AAPL exposes `▲ 1,84%`; movement pauses, blur reaches zero, the core reaches `scale(1.2) rotate(-7deg)`, and two rings settle at scales `1.2/1.4` with opacity `.3/.1`.
+- Digit rollers start on the first statistics intersection and keep their final values. Repeating card previews, hero decoration and the statistics pulse pause outside the viewport; all cycles also pause with the document visibility state.
+- Card and resource interactions no longer lift whole surfaces. CTAs and rows use the requested opacity/easing behavior.
+
+### Responsive checks
+
+- `2048 × 1092`: 18 orbs, settled hero and cue visible, no horizontal overflow.
+- `1440 × 900`: 13 orbs, no horizontal overflow.
+- `1280 × 720`: 11 orbs, no horizontal overflow.
+- `834 × 1112`: orbit field hidden; mobile header active; no horizontal overflow.
+- `390 × 844`: orbit field hidden; hero/ticket remain inside `18px` side margins; no horizontal overflow.
+- Mobile menu: backdrop reaches opacity `1`, panel reaches its final transform after `200ms`, Escape closes it, restores body scrolling and removes all links from the tab order while hidden.
+
+### Accessibility and technical checks
+
+- Orb links retain descriptive Russian `aria-label` values and keyboard focus parity with hover.
+- `prefers-reduced-motion` has explicit final-state rules for intro, orbs, metrics, previews and safety artwork; automatic agent rotation is disabled by the shared media-query hook.
+- Production build: passed, including type checking and all 40 generated routes. The isolated build environment only warned that Google Fonts could not be downloaded for optimization.
+- Browser console errors in the final checked session: `0`.
+- `git diff --check`: passed.
+
+### Findings
+
+- No open P1–P3 findings for the 0.0.5 public-landing motion scope.
 
 final result: passed

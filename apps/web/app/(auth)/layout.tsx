@@ -7,7 +7,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-6">
       <div className="flex items-center gap-2.5">
-        <Image src="/logo.png" alt="TRADR" width={36} height={36} />
+        <Image src="/logo.png" alt="TRADR" width={36} height={36} className="scale-[1.3]" />
         <span className="text-[17px] font-semibold tracking-[-0.3px] text-ink">TRADR</span>
       </div>
 

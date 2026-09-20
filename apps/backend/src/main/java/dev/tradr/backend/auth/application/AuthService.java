@@ -1,5 +1,7 @@
 package dev.tradr.backend.auth.application;
 
+import dev.tradr.backend.agents.application.AgentProvisioner;
+import dev.tradr.backend.agents.domain.Agent;
 import dev.tradr.backend.auth.domain.Account;
 import dev.tradr.backend.auth.domain.RefreshToken;
 import dev.tradr.backend.auth.domain.User;
@@ -42,6 +44,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
+    private final AgentProvisioner agentProvisioner;
 
     public AuthService(
             UserRepository userRepository,
@@ -49,7 +52,8 @@ public class AuthService {
             RefreshTokenRepository refreshTokenRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            JwtProperties jwtProperties
+            JwtProperties jwtProperties,
+            AgentProvisioner agentProvisioner
     ) {
         this.userRepository = userRepository;
         this.accountRepository = accountRepository;
@@ -57,6 +61,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.jwtProperties = jwtProperties;
+        this.agentProvisioner = agentProvisioner;
     }
 
     @Transactional
@@ -73,9 +78,15 @@ public class AuthService {
         user = userRepository.save(user);
 
         Account account = new Account(user.getId(), INITIAL_BALANCE, DEFAULT_CURRENCY);
-        accountRepository.save(account);
+        account = accountRepository.save(account);
 
-        return issueTokens(user);
+        UUID firstAgentId = null;
+        if (request.firstAgent() != null) {
+            Agent firstAgent = agentProvisioner.provision(account.getId(), request.firstAgent());
+            firstAgentId = firstAgent.getId();
+        }
+
+        return issueTokens(user, firstAgentId);
     }
 
     // Логин: ищем пользователя по email и сверяем пароль через BCrypt.
@@ -91,7 +102,7 @@ public class AuthService {
             throw new InvalidCredentialsException();
         }
 
-        return issueTokens(user);
+        return issueTokens(user, null);
     }
 
     // Ротация: старый refresh-токен гасится, выдаётся новый — так что
@@ -114,7 +125,7 @@ public class AuthService {
         User user = userRepository.findById(stored.getUserId())
                 .orElseThrow(InvalidRefreshTokenException::new);
 
-        return issueTokens(user);
+        return issueTokens(user, null);
     }
 
     @Transactional
@@ -137,7 +148,7 @@ public class AuthService {
         return toUserResponse(user);
     }
 
-    private AuthResponse issueTokens(User user) {
+    private AuthResponse issueTokens(User user, UUID firstAgentId) {
         String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail());
 
         String rawRefreshToken = generateOpaqueToken();
@@ -148,7 +159,7 @@ public class AuthService {
         );
         refreshTokenRepository.save(refreshToken);
 
-        return new AuthResponse(accessToken, rawRefreshToken, toUserResponse(user));
+        return new AuthResponse(accessToken, rawRefreshToken, toUserResponse(user), firstAgentId);
     }
 
     private UserResponse toUserResponse(User user) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Badge from "@/components/ui/Badge";
@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 import FieldBox from "@/components/ui/FieldBox";
 import { IconCheck, IconChevronRight, IconShield, IconShuffle, IconTrophy } from "@/components/icons";
 import { createAgent } from "@/lib/api/agents";
+import { getDashboard } from "@/lib/api/dashboard";
 import clsx from "@/lib/clsx";
 
 const strategies = [
@@ -23,18 +24,31 @@ export default function CreateAgentScreen() {
   const [strategy, setStrategy] = useState<(typeof strategies)[number]["id"]>("aggressive");
   const [submitting, setSubmitting] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
+  const [budget, setBudget] = useState(75000);
+  const [reserve, setReserve] = useState(100000);
   const selected = strategies.find((item) => item.id === strategy)!;
+
+  useEffect(() => {
+    getDashboard().then((value) => {
+      setReserve(value.reserveCash);
+      setBudget(Math.min(75000, Math.max(1000, value.reserveCash)));
+    }).catch(() => undefined);
+  }, []);
 
   const create = async () => {
     if (!name.trim()) {
       setRequestError("Введите название агента.");
       return;
     }
+    if (budget < 1000 || budget > Math.min(100000, reserve)) {
+      setRequestError("Укажите лимит от $1 000 до доступного резерва.");
+      return;
+    }
     setSubmitting(true);
     setRequestError(null);
     try {
-      await createAgent({ name: name.trim(), strategy });
-      router.push("/agents");
+      const agent = await createAgent({ name: name.trim(), strategy, budgetLimit: budget });
+      router.push(`/agents/${agent.id}`);
     } catch {
       setRequestError("Не удалось создать агента. Проверьте, что backend запущен.");
     } finally {
@@ -70,6 +84,11 @@ export default function CreateAgentScreen() {
               </button>;
             })}
           </div>
+          <div className="mt-6 border-t border-bone pt-5">
+            <div className="flex items-baseline justify-between gap-3"><p className="text-body-sm font-[535] text-ink">Капитал агента</p><p className="text-caption text-steel">В резерве {money(reserve)}</p></div>
+            <div className="mt-3 flex flex-wrap gap-2">{[10000, 25000, 50000, 75000, 100000].map((value) => <button key={value} type="button" disabled={value > reserve} onClick={() => setBudget(value)} className={clsx("focus-ring rounded-pill border px-3 py-2 text-caption font-[485] transition-colors disabled:cursor-not-allowed disabled:opacity-35", budget === value ? "border-magenta bg-magenta-tint text-magenta-deep" : "border-bone text-steel hover:border-magenta/30")}>{money(value)}</button>)}</div>
+            <label className="mt-3 block"><span className="text-caption text-steel">Точный лимит, $</span><input type="number" min={1000} max={Math.min(100000, reserve)} value={budget} onChange={(event) => setBudget(Number(event.target.value))} className="focus-ring mt-1.5 h-11 w-full rounded-btn border border-bone px-3 text-body-sm text-ink" /></label>
+          </div>
           <div className="mt-6 flex justify-end border-t border-bone pt-5"><Button variant="primary" icon={<IconCheck className="h-4 w-4" />} onClick={create} disabled={submitting}>{submitting ? "Создаём..." : "Создать агента"}</Button></div>
           {requestError && <p className="mt-3 text-body-sm text-negative">{requestError}</p>}
         </Card>
@@ -82,9 +101,11 @@ export default function CreateAgentScreen() {
             <p>Он выбирает покупку сам по правилам своего типа.</p>
             <p>После создания его можно остановить или запустить со страницы агента.</p>
           </div>
-          <p className="mt-5 border-t border-bone pt-5 text-caption text-steel">Ваш счёт начинается с $100,000. Все действия агентов видны в терминале.</p>
+          <p className="mt-5 border-t border-bone pt-5 text-caption text-steel">После создания агент останется на паузе. Запустите его, когда будете готовы; все действия появятся в обзоре.</p>
         </Card>
       </div>
     </div>
   );
 }
+
+function money(value: number): string { return new Intl.NumberFormat("ru-RU", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value); }

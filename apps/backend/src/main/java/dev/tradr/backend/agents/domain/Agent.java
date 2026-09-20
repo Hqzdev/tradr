@@ -32,7 +32,7 @@ public class Agent {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AgentStatus status = AgentStatus.ACTIVE;
+    private AgentStatus status = AgentStatus.PAUSED;
 
     @Column(name = "risk_level", nullable = false)
     private String riskLevel;

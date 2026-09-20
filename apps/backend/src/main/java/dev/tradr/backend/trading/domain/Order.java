@@ -96,6 +96,7 @@ public class Order {
     public BigDecimal getLimitPrice() { return limitPrice; }
     public OrderStatus getStatus() { return status; }
     public OrderSource getSource() { return source; }
+    public UUID getSourceAgentId() { return sourceAgentId; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getFilledAt() { return filledAt; }
 }

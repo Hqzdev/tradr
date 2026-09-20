@@ -1,11 +1,15 @@
-export const STOCK_TICKERS = ["AAPL", "NVDA", "TSLA", "MSFT", "AMZN", "GOOGL"] as const;
+export const STOCK_TICKERS = [
+  "AAPL", "NVDA", "TSLA", "MSFT", "AMZN", "GOOGL",
+  "META", "AMD", "NFLX", "INTC", "AVGO", "JPM",
+  "V", "KO", "DIS", "PEP", "BAC", "XOM",
+] as const;
 
 export type StockTicker = (typeof STOCK_TICKERS)[number];
 
 export interface StockProfile {
   ticker: StockTicker;
   name: string;
-  exchange: "NASDAQ";
+  exchange: "NASDAQ" | "NYSE";
   currency: "USD";
   demoPrice: number;
   demoChangePercent: number;
@@ -100,6 +104,162 @@ export const stockCatalog: Record<StockTicker, StockProfile> = {
     description:
       "Alphabet объединяет поисковые, рекламные, облачные и исследовательские продукты Google. Инструмент используется для сравнения решений на едином рынке.",
   },
+  META: {
+    ticker: "META",
+    name: "Meta Platforms, Inc.",
+    exchange: "NASDAQ",
+    currency: "USD",
+    demoPrice: 527.8,
+    demoChangePercent: 1.32,
+    color: "#0668E1",
+    logoSrc: "/stocks/meta.svg",
+    logoTone: "light",
+    description:
+      "Meta развивает социальные платформы, коммуникационные продукты и технологии дополненной реальности. В TRADR акция помогает сравнивать стратегии на крупной технологической компании.",
+  },
+  AMD: {
+    ticker: "AMD",
+    name: "Advanced Micro Devices, Inc.",
+    exchange: "NASDAQ",
+    currency: "USD",
+    demoPrice: 154.65,
+    demoChangePercent: -0.74,
+    color: "#242424",
+    logoSrc: "/stocks/amd.svg",
+    logoTone: "light",
+    description:
+      "AMD создаёт процессоры, графические ускорители и вычислительные платформы. Учебный инструмент показывает поведение волатильной полупроводниковой компании.",
+  },
+  NFLX: {
+    ticker: "NFLX",
+    name: "Netflix, Inc.",
+    exchange: "NASDAQ",
+    currency: "USD",
+    demoPrice: 119.5,
+    demoChangePercent: 0.91,
+    color: "#E50914",
+    logoSrc: "/stocks/netflix.svg",
+    logoTone: "light",
+    description:
+      "Netflix развивает глобальный стриминговый сервис и производство контента. В симуляции акция добавляет медиасектор и заметную реакцию на новости.",
+  },
+  INTC: {
+    ticker: "INTC",
+    name: "Intel Corporation",
+    exchange: "NASDAQ",
+    currency: "USD",
+    demoPrice: 24.36,
+    demoChangePercent: -1.18,
+    color: "#0071C5",
+    logoSrc: "/stocks/intel.svg",
+    logoTone: "light",
+    description:
+      "Intel разрабатывает процессоры и инфраструктуру для вычислительных систем. Инструмент полезен для учебного сравнения разных циклов полупроводникового рынка.",
+  },
+  AVGO: {
+    ticker: "AVGO",
+    name: "Broadcom Inc.",
+    exchange: "NASDAQ",
+    currency: "USD",
+    demoPrice: 342.5,
+    demoChangePercent: 1.47,
+    color: "#CC092F",
+    logoSrc: "/stocks/broadcom.svg",
+    logoTone: "light",
+    description:
+      "Broadcom поставляет полупроводниковые и инфраструктурные программные решения. В TRADR акция расширяет набор технологических сценариев.",
+  },
+  JPM: {
+    ticker: "JPM",
+    name: "JPMorgan Chase & Co.",
+    exchange: "NYSE",
+    currency: "USD",
+    demoPrice: 303.2,
+    demoChangePercent: 0.42,
+    color: "#163A5F",
+    logoSrc: "/stocks/jpmorgan.svg",
+    logoTone: "light",
+    description:
+      "JPMorgan Chase предоставляет банковские и инвестиционные услуги. Акция добавляет в учебный рынок крупнейший финансовый сектор.",
+  },
+  V: {
+    ticker: "V",
+    name: "Visa Inc.",
+    exchange: "NYSE",
+    currency: "USD",
+    demoPrice: 359.1,
+    demoChangePercent: -0.22,
+    color: "#1434CB",
+    logoSrc: "/stocks/visa.svg",
+    logoTone: "light",
+    description:
+      "Visa управляет глобальной платёжной сетью. В учебной среде бумага помогает изучать более устойчивые движения крупной финансовой инфраструктуры.",
+  },
+  KO: {
+    ticker: "KO",
+    name: "The Coca-Cola Company",
+    exchange: "NYSE",
+    currency: "USD",
+    demoPrice: 70.15,
+    demoChangePercent: 0.18,
+    color: "#F40009",
+    logoSrc: "/stocks/coca-cola.svg",
+    logoTone: "light",
+    description:
+      "Coca-Cola производит и развивает глобальный портфель напитков. Акция представляет защитный потребительский сектор в учебном портфеле.",
+  },
+  DIS: {
+    ticker: "DIS",
+    name: "The Walt Disney Company",
+    exchange: "NYSE",
+    currency: "USD",
+    demoPrice: 115.6,
+    demoChangePercent: -0.56,
+    color: "#C9E6FF",
+    logoSrc: "/stocks/disney.svg",
+    logoTone: "dark",
+    description:
+      "Disney объединяет студии, стриминг, телеканалы и тематические парки. В симуляции инструмент отражает сочетание медиа и потребительского бизнеса.",
+  },
+  PEP: {
+    ticker: "PEP",
+    name: "PepsiCo, Inc.",
+    exchange: "NASDAQ",
+    currency: "USD",
+    demoPrice: 145.8,
+    demoChangePercent: 0.27,
+    color: "#101010",
+    logoSrc: "/stocks/pepsi.svg",
+    logoTone: "light",
+    description:
+      "PepsiCo выпускает напитки и продукты питания по всему миру. Акция добавляет потребительский сектор с более спокойной учебной динамикой.",
+  },
+  BAC: {
+    ticker: "BAC",
+    name: "Bank of America Corporation",
+    exchange: "NYSE",
+    currency: "USD",
+    demoPrice: 51.2,
+    demoChangePercent: -0.34,
+    color: "#E31837",
+    logoSrc: "/stocks/bank-of-america.svg",
+    logoTone: "light",
+    description:
+      "Bank of America оказывает банковские и инвестиционные услуги. Инструмент расширяет финансовую часть учебного рынка TRADR.",
+  },
+  XOM: {
+    ticker: "XOM",
+    name: "Exxon Mobil Corporation",
+    exchange: "NYSE",
+    currency: "USD",
+    demoPrice: 113.45,
+    demoChangePercent: 0.39,
+    color: "#FFF0F0",
+    logoSrc: "/stocks/exxonmobil.svg",
+    logoTone: "dark",
+    description:
+      "ExxonMobil работает в энергетике и нефтехимии. В учебном портфеле акция показывает отраслевое поведение энергетического сектора.",
+  },
 };
 
 export const heroOrbPlacements: HeroOrbPlacement[] = [
@@ -107,20 +267,32 @@ export const heroOrbPlacements: HeroOrbPlacement[] = [
   { id: 2, ticker: "AAPL", labelSide: "right" },
   { id: 3, ticker: "NVDA", labelSide: "right" },
   { id: 4, ticker: "MSFT", labelSide: "left" },
-  { id: 5, ticker: "AMZN", labelSide: "left" },
+  { id: 5, ticker: "META", labelSide: "left" },
   { id: 6, ticker: "GOOGL", labelSide: "left" },
-  { id: 7, ticker: "MSFT", labelSide: "right" },
-  { id: 8, ticker: "NVDA", labelSide: "right" },
-  { id: 9, ticker: "TSLA", labelSide: "left" },
-  { id: 10, ticker: "GOOGL", labelSide: "left" },
-  { id: 11, ticker: "AMZN", labelSide: "right" },
-  { id: 12, ticker: "AAPL", labelSide: "left" },
-  { id: 13, ticker: "GOOGL", labelSide: "right" },
-  { id: 14, ticker: "AMZN", labelSide: "right" },
-  { id: 15, ticker: "MSFT", labelSide: "left" },
-  { id: 16, ticker: "NVDA", labelSide: "left" },
-  { id: 17, ticker: "AAPL", labelSide: "right" },
-  { id: 18, ticker: "TSLA", labelSide: "left" },
+  { id: 7, ticker: "JPM", labelSide: "right" },
+  { id: 8, ticker: "AMD", labelSide: "right" },
+  { id: 9, ticker: "NFLX", labelSide: "left" },
+  { id: 10, ticker: "V", labelSide: "left" },
+  { id: 11, ticker: "KO", labelSide: "right" },
+  { id: 12, ticker: "AMZN", labelSide: "left" },
+  { id: 13, ticker: "INTC", labelSide: "left" },
+  { id: 14, ticker: "AVGO", labelSide: "right" },
+  { id: 15, ticker: "DIS", labelSide: "left" },
+  { id: 16, ticker: "PEP", labelSide: "left" },
+  { id: 17, ticker: "BAC", labelSide: "right" },
+  { id: 18, ticker: "XOM", labelSide: "left" },
+  { id: 19, ticker: "AAPL", labelSide: "right" },
+  { id: 20, ticker: "NVDA", labelSide: "right" },
+  { id: 21, ticker: "TSLA", labelSide: "left" },
+  { id: 22, ticker: "MSFT", labelSide: "right" },
+  { id: 23, ticker: "AMZN", labelSide: "left" },
+  { id: 24, ticker: "GOOGL", labelSide: "left" },
+  { id: 25, ticker: "META", labelSide: "right" },
+  { id: 26, ticker: "AMD", labelSide: "left" },
+  { id: 27, ticker: "JPM", labelSide: "right" },
+  { id: 28, ticker: "V", labelSide: "left" },
+  { id: 29, ticker: "KO", labelSide: "left" },
+  { id: 30, ticker: "XOM", labelSide: "right" },
 ];
 
 export function isStockTicker(value: string): value is StockTicker {

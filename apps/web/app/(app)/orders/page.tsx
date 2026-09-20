@@ -1,8 +1,2 @@
-import type { Metadata } from "next";
-import OpenOrdersScreen from "@/components/screens/OpenOrdersScreen";
-
-export const metadata: Metadata = { title: "Открытые заявки · TRADR" };
-
-export default function OrdersPage() {
-  return <OpenOrdersScreen />;
-}
+import { redirect } from "next/navigation";
+export default function OrdersPage() { redirect("/history"); }

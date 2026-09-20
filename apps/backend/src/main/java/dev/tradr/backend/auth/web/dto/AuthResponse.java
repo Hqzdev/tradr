@@ -1,5 +1,7 @@
 package dev.tradr.backend.auth.web.dto;
 
+import java.util.UUID;
+
 // accessToken — короткоживущий JWT, кладётся в заголовок Authorization на
 // каждый запрос. refreshToken — долгоживущий opaque-токен (не JWT),
 // хранится только у клиента; на сервере лежит лишь его SHA-256-хэш
@@ -7,5 +9,6 @@ package dev.tradr.backend.auth.web.dto;
 public record AuthResponse(
         String accessToken,
         String refreshToken,
-        UserResponse user
+        UserResponse user,
+        UUID firstAgentId
 ) {}

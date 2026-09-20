@@ -30,7 +30,8 @@ import {
   IconTerminal,
   IconTrendUp,
 } from "@/components/icons";
-import { AnimatedMetric, IntroReveal, MotionPresence, usePrefersReducedMotion } from "@/components/landing/MotionPrimitives";
+import { AnimatedMetric, IntroReveal, MotionPresence } from "@/components/landing/MotionPrimitives";
+import HeroSimulator from "@/components/landing/HeroSimulator";
 import { getOrbMotionConfig, landingMotionPreset, type MetricRollerModel } from "@/lib/landingMotion";
 import { formatDemoPercent, heroOrbPlacements, stockCatalog, type HeroOrbPlacement } from "@/lib/stocks";
 
@@ -39,12 +40,6 @@ const landingNavigation = [
   { href: "#about", label: "О платформе" },
   { href: "#products", label: "Возможности" },
   { href: "#resources", label: "Ресурсы" },
-] as const;
-
-const heroAgents = [
-  { name: "Осторожный", action: "Ждёт подтверждения", confidence: "64%" },
-  { name: "Агрессивный", action: "Покупает 18 AAPL", confidence: "82%" },
-  { name: "Случайный", action: "Продаёт 12 AAPL", confidence: "—" },
 ] as const;
 
 const metrics: MetricRollerModel[] = [
@@ -89,42 +84,6 @@ function StockOrb({ placement }: { placement: HeroOrbPlacement }) {
         </span>
       </span>
     </Link>
-  );
-}
-
-function HeroTicket({ pageActive }: { pageActive: boolean }) {
-  const [agentIndex, setAgentIndex] = useState(0);
-  const reducedMotion = usePrefersReducedMotion();
-
-  useEffect(() => {
-    if (!pageActive || reducedMotion) return;
-    const timer = window.setInterval(() => setAgentIndex((index) => (index + 1) % heroAgents.length), 4200);
-    return () => window.clearInterval(timer);
-  }, [pageActive, reducedMotion]);
-
-  const agent = heroAgents[agentIndex];
-
-  return (
-    <div
-      className="tradr-ticket"
-      aria-label="Демонстрационная учебная заявка"
-      style={{ "--intro-delay": `${landingMotionPreset.heroTicketDelayMs}ms` } as CSSProperties}
-    >
-      <div className="tradr-ticket-panel tradr-ticket-panel--top">
-        <span className="tradr-ticket-label">Цена рынка</span>
-        <div className="tradr-ticket-value"><strong>$192,45</strong><span className="tradr-symbol"><i>A</i>AAPL</span></div>
-        <small>Apple Inc. · NASDAQ</small>
-      </div>
-      <button className="tradr-ticket-switch" type="button" aria-label="Сменить учебного агента" onClick={() => setAgentIndex((agentIndex + 1) % heroAgents.length)}>
-        <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} aria-hidden="true" />
-      </button>
-      <div className="tradr-ticket-panel tradr-ticket-panel--bottom" key={agent.name}>
-        <span className="tradr-ticket-label">Решение агента</span>
-        <div className="tradr-ticket-value"><strong>{agent.confidence}</strong><span className="tradr-agent-chip"><IconAgents aria-hidden="true" />{agent.name}</span></div>
-        <small>{agent.action}</small>
-      </div>
-      <Link className="tradr-ticket-cta" href="/register">Начать обучение</Link>
-    </div>
   );
 }
 
@@ -225,8 +184,8 @@ function MobileMenu({ open, activeSection, onClose }: { open: boolean; activeSec
 
 const productCards = [
   { id: "market", eyebrow: "Рынок", title: "Смотрите. Сравнивайте. Решайте.", body: "Котировки и контекст рынка собраны в одном месте — без перегруженных экранов.", action: "Открыть рынок", href: "/market", tone: "blue", icon: <IconMarket />, visual: <MarketPreview /> },
-  { id: "terminal", eyebrow: "Торговый терминал", title: "Просто. Наглядно. Безопасно.", body: "Создавайте учебные заявки и проверяйте идеи без риска для реальных средств.", action: "Открыть терминал", href: "/terminal", tone: "pink", icon: <IconTerminal />, visual: <TerminalPreview /> },
-  { id: "portfolio", eyebrow: "Портфель", title: "Каждое решение видно в результате.", body: "Наблюдайте, как сделки меняют капитал, позиции и общий риск стратегии.", action: "Смотреть портфель", href: "/portfolio", tone: "violet", icon: <IconPortfolio />, visual: <PortfolioPreview /> },
+  { id: "terminal", eyebrow: "Автономные агенты", title: "Запустите. Наблюдайте. Улучшайте.", body: "Агенты сами анализируют рынок, покупают и продают в рамках заданного бюджета.", action: "Открыть обзор", href: "/dashboard", tone: "pink", icon: <IconTerminal />, visual: <TerminalPreview /> },
+  { id: "portfolio", eyebrow: "Рост капитала", title: "Каждое решение видно в результате.", body: "Следите за прибылью, позициями и прогрессом к своей финансовой цели.", action: "Смотреть результат", href: "/dashboard", tone: "violet", icon: <IconPortfolio />, visual: <PortfolioPreview /> },
   { id: "agents", eyebrow: "Сравнение агентов", title: "Один рынок. Три характера.", body: "Агрессивный, осторожный и случайный агенты работают на одинаковых данных.", action: "Сравнить агентов", href: "/agents", tone: "mint", icon: <IconAgents />, visual: <AgentsPreview /> },
   { id: "journal", eyebrow: "Журнал решений", title: "Возвращайтесь к логике сделки.", body: "Сигнал, действие и итог сохраняются для спокойного разбора каждого шага.", action: "Открыть журнал", href: "/journal", tone: "orange", icon: <IconHistory />, visual: <JournalPreview /> },
   { id: "safety", eyebrow: "Безопасная симуляция", title: "Ошибайтесь без финансового риска.", body: "Учебная среда помогает проверять гипотезы и постепенно видеть рынок увереннее.", action: "Начать обучение", href: "/register", tone: "magenta", icon: <IconShield />, visual: <SafetyPreview /> },
@@ -312,7 +271,7 @@ export default function LandingPage() {
               </span>
             ))}
           </h1>
-          <HeroTicket pageActive={pageActive && heroVisible} />
+          <HeroSimulator />
           <p style={{ "--intro-delay": `${landingMotionPreset.heroBodyDelayMs}ms` } as CSSProperties}>TRADR — безопасная учебная среда, где можно наблюдать за рынком<br className="desktop-only" /> и сравнивать решения агентов на одинаковых данных.</p>
         </div>
         <a className="tradr-scroll-cue" href="#about" style={{ "--intro-delay": `${landingMotionPreset.scrollCueDelayMs}ms` } as CSSProperties}>Листайте, чтобы узнать больше<HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={1.8} aria-hidden="true" /></a>
@@ -344,10 +303,10 @@ export default function LandingPage() {
       <footer className="tradr-footer">
         <div className="tradr-footer-socials"><a href="https://github.com" aria-label="GitHub"><HugeiconsIcon icon={GithubIcon} strokeWidth={1.8} /></a><a href="https://x.com" aria-label="X"><HugeiconsIcon icon={NewTwitterIcon} strokeWidth={1.8} /></a><a href="https://discord.com" aria-label="Discord"><HugeiconsIcon icon={DiscordIcon} strokeWidth={1.8} /></a></div>
         <div className="tradr-footer-links">
-          <div><strong>Платформа</strong><Link href="/market">Рынок</Link><Link href="/terminal">Терминал</Link><Link href="/portfolio">Портфель</Link><Link href="/agents">Агенты</Link></div>
+          <div><strong>Платформа</strong><Link href="/dashboard">Обзор</Link><Link href="/agents">Агенты</Link><Link href="/history">Активность</Link><Link href="/market">Рынок</Link></div>
           <div><strong>Обучение</strong><Link href="/catalog">Материалы</Link><Link href="/journal">Журнал</Link><Link href="/history">История</Link></div>
-          <div><strong>Компания</strong><Link href="/#about">О TRADR</Link><Link href="/teams">Сообщество</Link><Link href="/settings">Настройки</Link></div>
-          <div><strong>Помощь</strong><Link href="/settings">Центр помощи</Link><Link href="/login">Войти</Link><Link href="/register">Регистрация</Link></div>
+          <div><strong>Компания</strong><Link href="/about">О TRADR</Link><Link href="/careers">Карьера</Link><Link href="/governance">Управление</Link></div>
+          <div><strong>Помощь</strong><Link href="/developers">Разработчикам</Link><Link href="/help">Центр помощи</Link><Link href="/contact">Связаться с нами</Link><Link href="/privacy">Конфиденциальность</Link></div>
         </div>
         <div className="tradr-footer-bottom"><span>© {new Date().getFullYear()} TRADR</span><div><span>Учебная платформа</span><span>Не является инвестиционной рекомендацией</span></div></div>
       </footer>

@@ -1,0 +1,13 @@
+INSERT INTO instruments (id, ticker, name, exchange, type, currency, base_price) VALUES
+    ('00000000-0000-0000-0000-000000000007', 'META', 'Meta Platforms, Inc.', 'NASDAQ', 'STOCK', 'USD', 527.8000),
+    ('00000000-0000-0000-0000-000000000008', 'AMD', 'Advanced Micro Devices, Inc.', 'NASDAQ', 'STOCK', 'USD', 154.6500),
+    ('00000000-0000-0000-0000-000000000009', 'NFLX', 'Netflix, Inc.', 'NASDAQ', 'STOCK', 'USD', 119.5000),
+    ('00000000-0000-0000-0000-000000000010', 'INTC', 'Intel Corporation', 'NASDAQ', 'STOCK', 'USD', 24.3600),
+    ('00000000-0000-0000-0000-000000000011', 'AVGO', 'Broadcom Inc.', 'NASDAQ', 'STOCK', 'USD', 342.5000),
+    ('00000000-0000-0000-0000-000000000012', 'JPM', 'JPMorgan Chase & Co.', 'NYSE', 'STOCK', 'USD', 303.2000),
+    ('00000000-0000-0000-0000-000000000013', 'V', 'Visa Inc.', 'NYSE', 'STOCK', 'USD', 359.1000),
+    ('00000000-0000-0000-0000-000000000014', 'KO', 'The Coca-Cola Company', 'NYSE', 'STOCK', 'USD', 70.1500),
+    ('00000000-0000-0000-0000-000000000015', 'DIS', 'The Walt Disney Company', 'NYSE', 'STOCK', 'USD', 115.6000),
+    ('00000000-0000-0000-0000-000000000016', 'PEP', 'PepsiCo, Inc.', 'NASDAQ', 'STOCK', 'USD', 145.8000),
+    ('00000000-0000-0000-0000-000000000017', 'BAC', 'Bank of America Corporation', 'NYSE', 'STOCK', 'USD', 51.2000),
+    ('00000000-0000-0000-0000-000000000018', 'XOM', 'Exxon Mobil Corporation', 'NYSE', 'STOCK', 'USD', 113.4500);

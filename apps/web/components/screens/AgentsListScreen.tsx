@@ -64,7 +64,7 @@ export default function AgentsListScreen() {
           </p>
           <h1 className="mt-2 text-heading font-[485] text-ink">Агенты</h1>
           <p className="mt-1.5 text-body text-steel">
-            Каждый агент получает личный сигнал и сам выбирает подходящую акцию.
+            Каждый агент торгует только своим капиталом: сам покупает, продаёт и ограничивает риск.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -109,7 +109,8 @@ export default function AgentsListScreen() {
               <tr className="text-caption text-steel">
                 <th className="pb-2 font-[485]">Агент</th>
                 <th className="pb-2 font-[485]">Стратегия</th>
-                <th className="pb-2 font-[485]">Сигнал</th>
+                <th className="pb-2 font-[485]">Капитал</th>
+                <th className="pb-2 font-[485]">Результат</th>
                 <th className="pb-2 font-[485]">Статус</th>
               </tr>
             </thead>
@@ -142,8 +143,9 @@ export default function AgentsListScreen() {
                       <span className="text-body-sm text-ink">{strategyLabel[agent.strategy] ?? agent.strategy}</span>
                     </td>
                     <td className="border-t border-bone py-3 text-body-sm text-ink">
-                      {signalLabel(agent.triggerPercent)}
+                      {money(agent.totalValue)}
                     </td>
+                    <td className={`border-t border-bone py-3 text-body-sm ${agent.profit >= 0 ? "text-positive" : "text-negative"}`}>{agent.profit >= 0 ? "+" : "−"}{money(Math.abs(agent.profit))}</td>
                     <td className="border-t border-bone py-3">
                       <Badge tone={agent.status}>{statusLabel[agent.status]}</Badge>
                     </td>
@@ -175,6 +177,4 @@ function formatDate(value: string): string {
   );
 }
 
-function signalLabel(value: number): string {
-  return `${value > 0 ? "+" : ""}${value}%`;
-}
+function money(value: number): string { return new Intl.NumberFormat("ru-RU", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value); }

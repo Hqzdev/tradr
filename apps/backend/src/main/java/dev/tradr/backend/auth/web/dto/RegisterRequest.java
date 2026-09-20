@@ -1,8 +1,10 @@
 package dev.tradr.backend.auth.web.dto;
 
+import dev.tradr.backend.agents.web.dto.CreateAgentRequest;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.Valid;
 
 // record — компактный неизменяемый DTO: поля объявляются один раз в
 // заголовке, конструктор/геттеры/equals/hashCode генерируются сами.
@@ -11,5 +13,6 @@ import jakarta.validation.constraints.Size;
 public record RegisterRequest(
         @NotBlank @Email String email,
         @NotBlank @Size(min = 8, message = "Минимум 8 символов") String password,
-        @NotBlank String displayName
+        @NotBlank String displayName,
+        @Valid CreateAgentRequest firstAgent
 ) {}

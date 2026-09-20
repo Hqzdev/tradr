@@ -6,10 +6,9 @@ import dev.tradr.backend.auth.exception.InvalidRefreshTokenException;
 import dev.tradr.backend.market.exception.InstrumentNotFoundException;
 import dev.tradr.backend.market.exception.InvalidTimeframeException;
 import dev.tradr.backend.trading.exception.InvalidOrderException;
-import dev.tradr.backend.trading.exception.OrderNotFoundException;
-import dev.tradr.backend.trading.exception.OrderStateException;
 import dev.tradr.backend.trading.exception.InsufficientFundsException;
 import dev.tradr.backend.trading.exception.InsufficientPositionException;
+import dev.tradr.backend.agents.exception.AgentAllocationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -50,12 +49,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getMessage()));
     }
 
-    @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleOrderNotFound(OrderNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorResponse(ex.getMessage()));
-    }
-
-    @ExceptionHandler({InsufficientFundsException.class, InsufficientPositionException.class, OrderStateException.class})
+    @ExceptionHandler({InsufficientFundsException.class, InsufficientPositionException.class, AgentAllocationException.class})
     public ResponseEntity<ErrorResponse> handleOrderConflict(RuntimeException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex.getMessage()));
     }

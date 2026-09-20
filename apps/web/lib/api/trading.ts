@@ -28,6 +28,8 @@ export interface Order {
   limitPrice: number | null;
   status: string;
   source: string;
+  agentId: string | null;
+  agentName: string;
   createdAt: string;
   filledAt: string | null;
 }
@@ -41,6 +43,8 @@ export interface Trade {
   gross: number;
   commission: number;
   total: number;
+  agentId: string | null;
+  agentName: string;
   executedAt: string;
 }
 
@@ -53,23 +57,6 @@ export interface TradeStats {
   openOrders: number;
 }
 
-export interface OrderPreview {
-  quantity: number;
-  gross: number;
-  commission: number;
-  total: number;
-  valid: boolean;
-}
-
-export interface CreateOrderInput {
-  ticker: string;
-  side: "buy" | "sell";
-  orderType: "market" | "limit";
-  quantity?: string;
-  amount?: string;
-  limitPrice?: string;
-}
-
 export function getPortfolio(): Promise<Portfolio> {
   return apiFetch<Portfolio>("/portfolio");
 }
@@ -78,33 +65,10 @@ export function getOrders(status?: string): Promise<Order[]> {
   return apiFetch<Order[]>(status ? `/orders?status=${encodeURIComponent(status)}` : "/orders");
 }
 
-export function cancelOrder(id: string): Promise<void> {
-  return apiFetch<void>(`/orders/${id}`, { method: "DELETE" });
-}
-
 export function getTrades(): Promise<Trade[]> {
   return apiFetch<Trade[]>("/trades");
 }
 
 export function getTradeStats(): Promise<TradeStats> {
   return apiFetch<TradeStats>("/trades/stats");
-}
-
-export function previewOrder(input: {
-  ticker: string;
-  side: "buy" | "sell";
-  anchor: "quantity" | "amount";
-  value: string;
-}): Promise<OrderPreview> {
-  return apiFetch<OrderPreview>("/orders/preview", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-}
-
-export function createOrder(input: CreateOrderInput): Promise<Order> {
-  return apiFetch<Order>("/orders", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
 }

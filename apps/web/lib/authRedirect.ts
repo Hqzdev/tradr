@@ -1,21 +1,25 @@
-const DEFAULT_AUTH_DESTINATION = "/market";
+const DEFAULT_AUTH_DESTINATION = "/dashboard";
 
-export function safeNextPath(value?: string | string[] | null): string {
+export function safeNextPathOrNull(value?: string | string[] | null): string | null {
   const candidate = Array.isArray(value) ? value[0] : value;
   if (!candidate || !candidate.startsWith("/") || candidate.startsWith("//")) {
-    return DEFAULT_AUTH_DESTINATION;
+    return null;
   }
 
   try {
     const parsed = new URL(candidate, "https://tradr.local");
     return parsed.origin === "https://tradr.local"
       ? `${parsed.pathname}${parsed.search}${parsed.hash}`
-      : DEFAULT_AUTH_DESTINATION;
+      : null;
   } catch {
-    return DEFAULT_AUTH_DESTINATION;
+    return null;
   }
 }
 
-export function authPath(pathname: "/login" | "/register", nextPath: string): string {
-  return `${pathname}?next=${encodeURIComponent(safeNextPath(nextPath))}`;
+export function safeNextPath(value?: string | string[] | null): string {
+  return safeNextPathOrNull(value) ?? DEFAULT_AUTH_DESTINATION;
+}
+
+export function authPath(pathname: "/login" | "/register", nextPath?: string | null): string {
+  return nextPath ? `${pathname}?next=${encodeURIComponent(safeNextPath(nextPath))}` : pathname;
 }

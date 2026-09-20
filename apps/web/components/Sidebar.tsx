@@ -11,6 +11,7 @@ import {
   ChevronDownIcon,
   Database01Icon,
   LayoutDashboardIcon,
+  HistoryIcon,
   Notification01Icon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
@@ -20,7 +21,6 @@ import {
   Shield01Icon,
   TradeUpIcon,
   UserIcon,
-  Wallet01Icon,
 } from "@hugeicons/core-free-icons";
 import clsx from "@/lib/clsx";
 import { currentRelease } from "@/lib/changelog";
@@ -35,10 +35,10 @@ const NAV_ITEM_BASE =
   "press-98 focus-ring relative flex h-[42px] w-full items-center gap-3 rounded-[14px] px-3 text-[14px] tracking-[-0.28px] transition-[background-color,color,transform] duration-150 ease-out active:duration-80 active:scale-[0.98]";
 
 const primaryNav = [
-  { href: "/market", label: "Рынок", icon: LayoutDashboardIcon },
-  { href: "/terminal", label: "Терминал", icon: ChartCandlestickIcon },
-  { href: "/portfolio", label: "Портфель", icon: Wallet01Icon },
+  { href: "/dashboard", label: "Обзор", icon: LayoutDashboardIcon },
   { href: "/agents", label: "Агенты", icon: Robot01Icon },
+  { href: "/history", label: "Активность", icon: HistoryIcon },
+  { href: "/market", label: "Рынок", icon: ChartCandlestickIcon },
 ];
 
 // Команды / Журнал / Каталог / Симуляция live outside the /agents URL

@@ -14,6 +14,8 @@ public record TradeResponse(
         BigDecimal gross,
         BigDecimal commission,
         BigDecimal total,
+        UUID agentId,
+        String agentName,
         Instant executedAt
 ) {
 }

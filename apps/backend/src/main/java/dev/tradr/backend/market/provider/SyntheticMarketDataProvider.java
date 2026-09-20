@@ -15,20 +15,25 @@ import java.util.Map;
 @Component
 public class SyntheticMarketDataProvider implements MarketDataProvider {
 
-    private static final List<BigDecimal> TICK_SCENARIO = List.of(
-            new BigDecimal("0.00"), new BigDecimal("0.02"), new BigDecimal("0.05"),
-            new BigDecimal("0.03"), new BigDecimal("-0.02"), new BigDecimal("0.04"),
-            new BigDecimal("0.06"), new BigDecimal("0.02"), new BigDecimal("-0.03"),
-            new BigDecimal("0.05")
-    );
-
-    private static final Map<String, BigDecimal> DAILY_CHANGE_PERCENT = Map.of(
-            "AAPL", new BigDecimal("1.84"),
-            "NVDA", new BigDecimal("2.10"),
-            "TSLA", new BigDecimal("-0.62"),
-            "MSFT", new BigDecimal("0.48"),
-            "AMZN", new BigDecimal("1.06"),
-            "GOOGL", new BigDecimal("-0.31")
+    private static final Map<String, BigDecimal> DAILY_CHANGE_PERCENT = Map.ofEntries(
+            Map.entry("AAPL", new BigDecimal("1.84")),
+            Map.entry("NVDA", new BigDecimal("2.10")),
+            Map.entry("TSLA", new BigDecimal("-0.62")),
+            Map.entry("MSFT", new BigDecimal("0.48")),
+            Map.entry("AMZN", new BigDecimal("1.06")),
+            Map.entry("GOOGL", new BigDecimal("-0.31")),
+            Map.entry("META", new BigDecimal("1.32")),
+            Map.entry("AMD", new BigDecimal("-0.74")),
+            Map.entry("NFLX", new BigDecimal("0.91")),
+            Map.entry("INTC", new BigDecimal("-1.18")),
+            Map.entry("AVGO", new BigDecimal("1.47")),
+            Map.entry("JPM", new BigDecimal("0.42")),
+            Map.entry("V", new BigDecimal("-0.22")),
+            Map.entry("KO", new BigDecimal("0.18")),
+            Map.entry("DIS", new BigDecimal("-0.56")),
+            Map.entry("PEP", new BigDecimal("0.27")),
+            Map.entry("BAC", new BigDecimal("-0.34")),
+            Map.entry("XOM", new BigDecimal("0.39"))
     );
 
     private static final List<BigDecimal> AAPL_FIVE_MINUTE_DELTAS = List.of(
@@ -63,13 +68,21 @@ public class SyntheticMarketDataProvider implements MarketDataProvider {
 
     @Override
     public BigDecimal nextPrice(Instrument instrument, long step) {
-        BigDecimal delta = TICK_SCENARIO.get((int) (step % TICK_SCENARIO.size()));
-        return round(instrument.getBasePrice().add(delta));
+        int offset = Math.floorMod(instrument.getTicker().hashCode(), 60);
+        int phase = (int) Math.floorMod(step + offset, 180);
+        double trend = phase < 60
+                ? -0.04 + phase * (0.055 / 60.0)
+                : phase < 120
+                ? 0.015 + (phase - 60) * (0.04 / 60.0)
+                : 0.055 - (phase - 120) * (0.095 / 60.0);
+        double texture = Math.sin((step + offset) * 0.29) * 0.0045;
+        return round(instrument.getBasePrice().multiply(BigDecimal.valueOf(1 + trend + texture)));
     }
 
     @Override
     public BigDecimal referencePrice(Instrument instrument) {
-        BigDecimal changeFactor = BigDecimal.ONE.add(DAILY_CHANGE_PERCENT.get(instrument.getTicker())
+        BigDecimal dailyChange = DAILY_CHANGE_PERCENT.getOrDefault(instrument.getTicker(), BigDecimal.ZERO);
+        BigDecimal changeFactor = BigDecimal.ONE.add(dailyChange
                 .movePointLeft(2));
         return round(instrument.getBasePrice().divide(changeFactor, 4, RoundingMode.HALF_UP));
     }

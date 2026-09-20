@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { OrderCalculator as Calculator } from "./OrderCalculator";
+import { OrderCalculator as Calculator } from "./OrderCalculator.ts";
 
 test("quantity determines gross and rounded buy fee", () => {
   assert.deepEqual(Calculator.calculate("9000", "quantity", "0,21", "buy"), {

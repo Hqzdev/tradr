@@ -24,6 +24,15 @@ public class Account {
     @Column(nullable = false) // нуллабле фалз потому что валюта обязателен для создания аккаунта
     private String currency; // валюта аккаунта, которая будет храниться в базе
 
+    @Column(name = "initial_balance", nullable = false)
+    private BigDecimal initialBalance;
+
+    @Column(name = "goal_value", nullable = false)
+    private BigDecimal goalValue;
+
+    @Column(name = "acceleration_enabled", nullable = false)
+    private boolean accelerationEnabled = true;
+
     @Column(name = "created_at", nullable = false, updatable = false) // нуллабле фалз потому что дата создания обязателен для регистрации, апдейтабл фалз потому что дата создания не должна изменяться
     private Instant createdAt = Instant.now(); // дата и время создания аккаунта, которая будет храниться в базе
 
@@ -33,6 +42,8 @@ public class Account {
         this.userId = userId;
         this.balance = balance;
         this.currency = currency;
+        this.initialBalance = balance;
+        this.goalValue = balance.multiply(new BigDecimal("1.10")).setScale(2);
     }
 
     // геттеры - без сеттера на id потому что id генерируется автоматически и не должен изменяться
@@ -40,6 +51,9 @@ public class Account {
     public UUID getUserId() { return userId; }
     public BigDecimal getBalance() { return balance; }
     public String getCurrency() { return currency; }
+    public BigDecimal getInitialBalance() { return initialBalance; }
+    public BigDecimal getGoalValue() { return goalValue; }
+    public boolean isAccelerationEnabled() { return accelerationEnabled; }
     public Instant getCreatedAt() { return createdAt; }
 
     public void debit(BigDecimal amount) {
@@ -48,5 +62,10 @@ public class Account {
 
     public void credit(BigDecimal amount) {
         balance = balance.add(amount).setScale(2);
+    }
+
+    public void updatePreferences(BigDecimal goalValue, Boolean accelerationEnabled) {
+        if (goalValue != null) this.goalValue = goalValue.setScale(2);
+        if (accelerationEnabled != null) this.accelerationEnabled = accelerationEnabled;
     }
 }

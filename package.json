@@ -1,0 +1,22 @@
+{
+  "name": "tradr",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/backend"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail --names web,backend --prefix-colors cyan,magenta \"npm run dev --workspace=tradr-web\" \"npm run dev --workspace=tradr-backend\"",
+    "dev:web": "npm run dev --workspace=tradr-web",
+    "dev:backend": "npm run dev --workspace=tradr-backend",
+    "test:web": "npm run test --workspace=tradr-web",
+    "test:backend": "npm run test --workspace=tradr-backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

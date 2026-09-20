@@ -14,6 +14,25 @@ interface AuthResponse {
   accessToken: string;
   refreshToken: string;
   user: AuthUser;
+  firstAgentId?: string | null;
+}
+
+export interface FirstAgentRegistration {
+  name: string;
+  strategy: "careful" | "aggressive" | "random";
+  budgetLimit: number;
+}
+
+export interface RegistrationInput {
+  email: string;
+  password: string;
+  displayName: string;
+  firstAgent: FirstAgentRegistration;
+}
+
+export interface RegistrationResult {
+  user: AuthUser;
+  firstAgentId: string | null;
 }
 
 export async function login(email: string, password: string): Promise<AuthUser> {
@@ -25,13 +44,13 @@ export async function login(email: string, password: string): Promise<AuthUser> 
   return response.user;
 }
 
-export async function register(email: string, password: string, displayName: string): Promise<AuthUser> {
+export async function register(input: RegistrationInput): Promise<RegistrationResult> {
   const response = await apiFetch<AuthResponse>("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password, displayName }),
+    body: JSON.stringify(input),
   });
   saveSession(response);
-  return response.user;
+  return { user: response.user, firstAgentId: response.firstAgentId ?? null };
 }
 
 export async function currentUser(): Promise<AuthUser> {

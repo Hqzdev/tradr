@@ -1,5 +1,2 @@
-import TerminalScreen from "@/components/screens/TerminalScreen";
-
-export default function TerminalPage() {
-  return <TerminalScreen />;
-}
+import { redirect } from "next/navigation";
+export default function TerminalPage() { redirect("/dashboard"); }

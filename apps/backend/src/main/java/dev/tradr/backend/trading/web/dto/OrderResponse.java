@@ -13,6 +13,8 @@ public record OrderResponse(
         BigDecimal limitPrice,
         String status,
         String source,
+        UUID agentId,
+        String agentName,
         Instant createdAt,
         Instant filledAt
 ) {

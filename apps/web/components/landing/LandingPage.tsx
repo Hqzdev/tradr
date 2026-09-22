@@ -177,6 +177,9 @@ function MobileMenu({ open, activeSection, onClose }: { open: boolean; activeSec
             {item.label}
           </a>
         ))}
+        <Link className="tradr-mobile-menu-docs" href="/docs" tabIndex={open ? 0 : -1} onClick={onClose}>
+          Документация
+        </Link>
       </div>
     </div>
   );
@@ -243,7 +246,7 @@ export default function LandingPage() {
             return <a className={active ? "tradr-nav-link tradr-nav-link--active" : "tradr-nav-link"} href={item.href} key={item.href} aria-current={active ? "location" : undefined}>{item.label}</a>;
           })}
         </div>
-        <div className="tradr-nav-actions"><Link className="tradr-nav-login" href="/login">Войти</Link><Link className="tradr-nav-cta" href="/register">Начать обучение</Link></div>
+        <div className="tradr-nav-actions"><Link className="tradr-nav-docs" href="/docs">Документация</Link><Link className="tradr-nav-login" href="/login">Войти</Link><Link className="tradr-nav-cta" href="/register">Начать обучение</Link></div>
       </nav>
 
       <nav className={`tradr-mobile-nav ${scrolled ? "tradr-mobile-nav--scrolled" : ""}`} aria-label="Основная навигация">
@@ -301,10 +304,10 @@ export default function LandingPage() {
       </section>
 
       <footer className="tradr-footer">
-        <div className="tradr-footer-socials"><a href="https://github.com" aria-label="GitHub"><HugeiconsIcon icon={GithubIcon} strokeWidth={1.8} /></a><a href="https://x.com" aria-label="X"><HugeiconsIcon icon={NewTwitterIcon} strokeWidth={1.8} /></a><a href="https://discord.com" aria-label="Discord"><HugeiconsIcon icon={DiscordIcon} strokeWidth={1.8} /></a></div>
+        <div className="tradr-footer-socials"><a href="https://github.com/Hqzdev/tradr" aria-label="GitHub: репозиторий TRADR" rel="noreferrer" target="_blank"><HugeiconsIcon icon={GithubIcon} strokeWidth={1.8} /></a><a href="https://x.com" aria-label="X"><HugeiconsIcon icon={NewTwitterIcon} strokeWidth={1.8} /></a><a href="https://discord.com" aria-label="Discord"><HugeiconsIcon icon={DiscordIcon} strokeWidth={1.8} /></a></div>
         <div className="tradr-footer-links">
           <div><strong>Платформа</strong><Link href="/dashboard">Обзор</Link><Link href="/agents">Агенты</Link><Link href="/history">Активность</Link><Link href="/market">Рынок</Link></div>
-          <div><strong>Обучение</strong><Link href="/catalog">Материалы</Link><Link href="/journal">Журнал</Link><Link href="/history">История</Link></div>
+          <div><strong>Обучение</strong><Link href="/docs">Документация</Link><Link href="/catalog">Материалы</Link><Link href="/journal">Журнал</Link><Link href="/history">История</Link></div>
           <div><strong>Компания</strong><Link href="/about">О TRADR</Link><Link href="/careers">Карьера</Link><Link href="/governance">Управление</Link></div>
           <div><strong>Помощь</strong><Link href="/developers">Разработчикам</Link><Link href="/help">Центр помощи</Link><Link href="/contact">Связаться с нами</Link><Link href="/privacy">Конфиденциальность</Link></div>
         </div>

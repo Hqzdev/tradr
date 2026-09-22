@@ -58,7 +58,7 @@ export function MarketingFooter({ theme = "light" }: Pick<MarketingShellProps, "
           <span>© 2026 TRADR · Учебная платформа</span>
           <span>Не является инвестиционной рекомендацией</span>
           <div className={styles.socials}>
-            <a href="https://github.com" aria-label="GitHub"><HugeiconsIcon icon={GithubIcon} strokeWidth={1.8} /></a>
+            <a href="https://github.com/Hqzdev/tradr" aria-label="GitHub: репозиторий TRADR" rel="noreferrer" target="_blank"><HugeiconsIcon icon={GithubIcon} strokeWidth={1.8} /></a>
             <a href="https://x.com" aria-label="X"><HugeiconsIcon icon={NewTwitterIcon} strokeWidth={1.8} /></a>
             <a href="https://discord.com" aria-label="Discord"><HugeiconsIcon icon={DiscordIcon} strokeWidth={1.8} /></a>
           </div>

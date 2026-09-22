@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { usePathname } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { BubbleChatIcon } from "@hugeicons/core-free-icons";
-import { DocPage, docsGroups, docsPages, getAdjacentPages } from "@/lib/docs/content";
+import { DocPage, docsGroups, docsPages, getAdjacentPages, getCopyableDocText } from "@/lib/docs/content";
+import { currentRelease } from "@/lib/changelog";
 import {
   IconArrowUpRight,
   IconChevronLeft,
@@ -39,10 +40,13 @@ interface DocumentationSearchProps {
 const globalNavigation = [
   { href: "/", label: "Главная" },
   { href: "/docs", label: "Документация" },
-  { href: "/terminal", label: "Терминал" },
+  { href: "/dashboard", label: "Обзор" },
   { href: "/agents", label: "Агенты" },
-  { href: "/teams", label: "Команда" },
+  { href: "/history", label: "Активность" },
+  { href: "/market", label: "Рынок" },
 ] as const;
+
+const sidebarScrollStorageKey = "tradr.docs.sidebar-scroll-top";
 
 function normalize(value: string) {
   return value.toLocaleLowerCase("ru-RU").trim();
@@ -123,23 +127,55 @@ export default function DocsShell({ page }: DocsShellProps) {
   const [channelCopied, setChannelCopied] = useState(false);
   const desktopSearchRef = useRef<HTMLInputElement>(null);
   const mobileSearchRef = useRef<HTMLInputElement>(null);
+  const sidebarRef = useRef<HTMLElement>(null);
   const results = useMemo(() => searchDocumentation(query), [query]);
   const adjacent = getAdjacentPages(page);
+
+  const saveSidebarPosition = () => {
+    try {
+      window.sessionStorage.setItem(sidebarScrollStorageKey, String(sidebarRef.current?.scrollTop ?? 0));
+    } catch {
+      // Документация остаётся доступной, если браузер запретил sessionStorage.
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const savedPosition = Number(window.sessionStorage.getItem(sidebarScrollStorageKey));
+      if (!Number.isFinite(savedPosition) || savedPosition <= 0) return;
+
+      const frame = window.requestAnimationFrame(() => {
+        if (sidebarRef.current) sidebarRef.current.scrollTop = savedPosition;
+      });
+      return () => window.cancelAnimationFrame(frame);
+    } catch {
+      return undefined;
+    }
+  }, [pathname]);
 
   useEffect(() => {
     setActiveSection(page.sections[0]?.id ?? "");
     const sections = page.sections
       .map((section) => document.getElementById(section.id))
       .filter((section): section is HTMLElement => Boolean(section));
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((left, right) => left.boundingClientRect.top - right.boundingClientRect.top);
-      if (visible[0]?.target.id) setActiveSection(visible[0].target.id);
-    }, { rootMargin: "-132px 0px -58% 0px", threshold: [0, 0.1, 1] });
+    if (!sections.length) return;
 
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
+    const updateActiveSection = () => {
+      const marker = 120;
+      const active = sections.reduce<HTMLElement>((current, section) => (
+        section.getBoundingClientRect().top <= marker ? section : current
+      ), sections[0]);
+      setActiveSection(active?.id ?? "");
+    };
+
+    const frame = window.requestAnimationFrame(updateActiveSection);
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("hashchange", updateActiveSection);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("hashchange", updateActiveSection);
+    };
   }, [page]);
 
   useEffect(() => {
@@ -180,9 +216,9 @@ export default function DocsShell({ page }: DocsShellProps) {
     desktopSearchRef.current?.focus();
   };
 
-  const copyPageLink = async () => {
+  const copyPage = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(page.kind === "task" ? getCopyableDocText(page) : window.location.href);
       setPageCopied(true);
       window.setTimeout(() => setPageCopied(false), 1800);
     } catch {
@@ -208,7 +244,7 @@ export default function DocsShell({ page }: DocsShellProps) {
             <Link href="/" aria-label="На главную TRADR"><IconLogo /></Link>
             <div>
               <strong>TRADR Документация</strong>
-              <span>Версия 1.0</span>
+              <span>Версия {currentRelease.version}</span>
             </div>
           </div>
 
@@ -220,6 +256,7 @@ export default function DocsShell({ page }: DocsShellProps) {
 
           <div className="docs-header-actions">
             <DocumentationSearch inputRef={desktopSearchRef} onChange={setQuery} onSelect={closeSearch} query={query} results={results} />
+            <a className="docs-repository-link" href="https://github.com/Hqzdev/tradr" rel="noreferrer" target="_blank">GitHub <IconArrowUpRight /></a>
             <Link className="docs-open-app" href="/market">Открыть TRADR <IconArrowUpRight /></Link>
           </div>
 
@@ -245,14 +282,19 @@ export default function DocsShell({ page }: DocsShellProps) {
       </header>
 
       <div className="docs-layout">
-        <aside aria-label="Содержание документации" className={`docs-sidebar${mobileNavigationOpen ? " open" : ""}`}>
+        <aside
+          aria-label="Содержание документации"
+          className={`docs-sidebar${mobileNavigationOpen ? " open" : ""}`}
+          onScroll={saveSidebarPosition}
+          ref={sidebarRef}
+        >
           <div className="docs-sidebar-intro">
             <strong>Содержание</strong>
-            <span>12 разделов · простой русский</span>
+            <span>{docsPages.length} статей · простой язык</span>
           </div>
           {docsGroups.map((group) => (
-            <div className="docs-nav-group" key={group}>
-              <h2>{group}</h2>
+            <div className={group === "Задачи" ? "docs-nav-group docs-nav-group--tasks" : "docs-nav-group"} key={group}>
+              <h2>{group}<span>{docsPages.filter((candidate) => candidate.group === group).length}</span></h2>
               {docsPages.filter((candidate) => candidate.group === group).map((candidate) => {
                 const href = candidate.slug === "overview" ? "/docs" : `/docs/${candidate.slug}`;
                 const active = pathname === href || (pathname === "/docs/overview" && candidate.slug === "overview");
@@ -261,7 +303,7 @@ export default function DocsShell({ page }: DocsShellProps) {
                     className={active ? "active" : ""}
                     href={href}
                     key={candidate.slug}
-                    onClick={() => setMobileNavigationOpen(false)}
+                    onClick={() => { saveSidebarPosition(); setMobileNavigationOpen(false); }}
                   >
                     <span>{String(candidate.order).padStart(2, "0")}</span>
                     {candidate.title}
@@ -292,14 +334,22 @@ export default function DocsShell({ page }: DocsShellProps) {
           </nav>
         </main>
 
-        <aside className="docs-toc">
+        <aside aria-label="На этой странице" className="docs-toc">
           <strong>На этой странице</strong>
           <nav>
             {page.sections.map((section) => (
-              <a className={activeSection === section.id ? "active" : ""} href={`#${section.id}`} key={section.id}>{section.title}</a>
+              <a
+                aria-current={activeSection === section.id ? "location" : undefined}
+                className={activeSection === section.id ? "active" : ""}
+                href={`#${section.id}`}
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+              >
+                {section.title}
+              </a>
             ))}
           </nav>
-          <button className="docs-copy-page" onClick={copyPageLink} type="button"><IconCopy />{pageCopied ? "Ссылка скопирована" : "Копировать ссылку"}</button>
+          <button className="docs-copy-page" onClick={copyPage} type="button"><IconCopy />{pageCopied ? "Скопировано" : page.kind === "task" ? "Копировать задачу" : "Копировать ссылку"}</button>
         </aside>
       </div>
 

@@ -5,6 +5,14 @@ interface DocArticleProps {
   page: DocPage;
 }
 
+function sectionLabel(count: number) {
+  const remainder = count % 100;
+  if (remainder >= 11 && remainder <= 14) return `${count} разделов`;
+  if (count % 10 === 1) return `${count} раздел`;
+  if (count % 10 >= 2 && count % 10 <= 4) return `${count} раздела`;
+  return `${count} разделов`;
+}
+
 function FileList({ section }: { section: DocSection }) {
   if (!section.entries) return null;
 
@@ -13,7 +21,7 @@ function FileList({ section }: { section: DocSection }) {
       {section.entries.map((entry) => (
         <div className="docs-file-row" key={`${section.id}-${entry.path}`}>
           <div className="docs-file-name">
-            <code>{entry.path}</code>
+            {entry.href ? <a className="docs-file-link" href={entry.href} rel="noreferrer" target="_blank"><code>{entry.path}</code></a> : <code>{entry.path}</code>}
             {entry.tag ? <span className="docs-file-tag">{entry.tag}</span> : null}
             {entry.warning ? <span className="docs-file-warning">{entry.warning}</span> : null}
           </div>
@@ -45,11 +53,11 @@ export default function DocArticle({ page }: DocArticleProps) {
         <h1>{page.title}</h1>
         <p>{page.description}</p>
         <div className="docs-page-meta">
-          <span>{page.sections.length} раздела</span>
+          <span>{sectionLabel(page.sections.length)}</span>
           <i aria-hidden="true" />
           <span>{page.readTime} чтения</span>
           <i aria-hidden="true" />
-          <span>Проверено по коду</span>
+          <span>{page.kind === "task" ? "План реализации" : "Проверено по коду"}</span>
         </div>
       </header>
 

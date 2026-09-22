@@ -1,5 +1,40 @@
 # TRADR — design QA
 
+## Documentation refresh — 0.0.14
+
+### Scope and reference
+
+- The documentation website now contains 18 code-verified articles instead of 12.
+- The left rail is separated into `Начало`, `Frontend`, `Backend`, and `Данные и разработка`, with visible article counts.
+- The supplied reference for “На этой странице” was reproduced with a thin top rule, uppercase gray label, large neutral links, generous vertical rhythm, and no former magenta vertical rail.
+- Basel-like typography continues through the existing Inter stack with `-0.02em` tracking.
+
+### Content QA
+
+- Removed old claims about public manual orders, a fixed `0.1`-share agent, missing auth screens, deleted frontend files, active simulations, and a working Finnhub provider.
+- Added beginner-friendly articles for the complete user journey, Java/Spring vocabulary, frontend data flow, Dashboard calculations, agent policy, migrations, testing, and production deployment.
+- Updated root README, architecture, changelog, backend docs `00–09`, module READMEs, and both environment templates.
+- Real market data is explicitly described as unimplemented; the current source is `SyntheticMarketDataProvider`.
+
+### Responsive and interaction checks
+
+- Desktop default viewport: left navigation, centered article, and reference-style right contents render without overlap.
+- `820 × 900`: article remains readable; side navigation and the right contents collapse into the mobile header controls.
+- `390 × 844`: no horizontal overflow; article cards stack and the full 18-article navigation opens as a scrollable drawer.
+- Mobile navigation exposes all four groups and closes through the labelled control.
+- A clean browser tab reported zero console errors.
+
+### Verification
+
+- Frontend tests: 17 passed.
+- Frontend production build: passed; 55 routes generated and all 18 documentation paths prerendered.
+- Backend tests: 24 passed against local PostgreSQL; Flyway validated all 15 migrations.
+- `git diff --check`: passed.
+
+final result: passed
+
+---
+
 ## Faster agent economy — 0.0.13
 
 - New registrations default the first agent to `$75,000`; the existing account migration preserves reserve + wallet capital while topping up the oldest active agent where funds are available.

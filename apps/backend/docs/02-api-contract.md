@@ -1,103 +1,111 @@
-# API-контракт
+# Актуальный API-контракт
 
-База: `/api/v1`. Все ответы — JSON. Аутентифицированные запросы —
-`Authorization: Bearer <access_token>`. Реальный времени — WebSocket
-(`/ws/...`), STOMP поверх SockJS или raw WebSocket — выбор за тобой, raw
-проще, STOMP удобнее при росте числа каналов подписки.
+Базовый адрес: `/api/v1`. Защищённые запросы используют заголовок:
 
-Каждый блок ниже привязан к конкретному экрану `apps/web/app/(app)/...`, чтобы
-не гадать, что именно нужно эндпоинту.
+```text
+Authorization: Bearer <accessToken>
+```
 
-## Auth (экраны логина/регистрации — их ещё нет на фронте, добавляются в Phase 1)
+Ошибки возвращаются в виде `{ "message": "Понятный текст" }`.
 
-- `POST /auth/register` — { email, password, displayName } → создаёт User + Account с нулевым балансом → { accessToken, refreshToken, user }
-- `POST /auth/login` — { email, password } → { accessToken, refreshToken, user }
-- `POST /auth/refresh` — { refreshToken } → { accessToken, refreshToken } (ротация)
-- `POST /auth/logout` — ревокация refresh-токена
-- `GET /auth/me` → текущий User + Account
+## Авторизация
 
-## Рынок — `/market`, `/market/[ticker]`
+### POST /auth/register
 
-- `GET /market/indices` → IndexQuote[] (замена `fixtures.ts: indices`)
-- `GET /instruments` → Asset[] (замена `fixtures.ts: assets`)
-- `GET /instruments/{ticker}` → Asset + StockCardInfo (замена `tradingExtra.ts: stockCards[ticker]`)
-- `GET /instruments/{ticker}/candles?timeframe=1m|5m|15m|1h|1d&limit=` → Candle[] (замена `fixtures.ts: candles`, timeframes)
-- `GET /instruments/{ticker}/news` → NewsItem[] (замена `tradingExtra.ts: stockCards[ticker].news`)
-- `WS /ws/market/{ticker}` → поток тиков `{ price, changePercent, ts }` (замена `useTicker.ts`)
+```json
+{
+  "email": "user@example.com",
+  "password": "secret123",
+  "displayName": "Ярослав",
+  "firstAgent": {
+    "name": "Стартовый агент",
+    "strategy": "careful",
+    "budgetLimit": 75000
+  }
+}
+```
 
-## Терминал — `/terminal`
+Возвращает `accessToken`, `refreshToken`, `user` и необязательный
+`firstAgentId`. `firstAgent` необязателен для старых клиентов.
 
-- `GET /instruments/{ticker}/quote` → текущая цена для формы заявки
-- `POST /orders/preview` — { ticker, side, anchor: quantity|amount, value } → { quantity, gross, commission, total, valid } (серверный эквивалент `OrderCalculator.calculate()` — **обязан давать те же числа при тех же входных данных**, покрой это интеграционным тестом, портированным из `OrderCalculator.test.ts`)
-- `POST /orders` — { ticker, side, orderType, quantity или amount } → Order (создаёт Order, мгновенно исполняет по рыночной цене → Trade → обновляет Position)
+- `POST /auth/login` — вход;
+- `POST /auth/refresh` — ротация refresh token;
+- `POST /auth/logout` — отзыв refresh token;
+- `GET /auth/me` — текущий пользователь.
 
-## Открытые заявки — `/orders`
+## Dashboard
 
-- `GET /orders?status=open` → OpenOrderRow[] (замена `tradingExtra.ts: openOrders`)
-- `DELETE /orders/{id}` → отмена
+- `GET /dashboard` — общий капитал, резерв, цель, P&L, скорость, агенты и
+  последние события;
+- `PATCH /account/preferences` — меняет `goalValue` и/или
+  `accelerationEnabled`.
 
-## История сделок — `/history`
+Пример:
 
-- `GET /trades?limit=&before=` → HistoryTradeRow[] (замена `tradingExtra.ts: tradeHistoryRows`, пагинация обязательна — в фикстурах 3 строки, в реальности их будут тысячи)
-- `GET /trades/stats` → tradeHistoryStats
+```json
+{ "goalValue": 120000, "accelerationEnabled": true }
+```
 
-## Портфель — `/portfolio`, `/portfolio/[ticker]`
+## Агенты
 
-- `GET /portfolio` → { cashBalance, totalValue, holdings: Holding[] } (замена `manualHoldings`, `manualPortfolioValue`, `totalCapital`, `freeCash`)
-- `GET /portfolio/{ticker}` → PositionInfo + PositionEntry[] (замена `tradingExtra.ts: positions[ticker]`)
+- `GET /agents` — неархивные агенты пользователя;
+- `POST /agents` — создать остановленного агента и выделить бюджет;
+- `GET /agents/{id}` — карточка агента;
+- `POST /agents/{id}/start` — запустить;
+- `POST /agents/{id}/pause` — поставить на паузу;
+- `POST /agents/{id}/close` — продать позиции, вернуть деньги, архивировать;
+- `PATCH /agents/{id}/allocation` — изменить капитал остановленного агента;
+- `GET /agents/{id}/performance` — кошелёк, позиции, P&L и кривая;
+- `GET /agents/{id}/log?limit=50` — журнал решений;
+- `GET /agents/{id}/character|budget|skills` — части конфигурации.
 
-## Агенты — `/agents/*`
+Создание:
 
-- `GET /agents` → Agent[] (список, замена `fixtures.ts: agents`)
-- `POST /agents` — мастер создания (тип из `agentTypeOptions`, character/budget/skills) → Agent
-- `GET /agents/{id}` → AgentDetailInfo (замена `agentsData.ts: agentDetails[id]`)
-- `PATCH /agents/{id}` — статус (active/paused), настройки
-- `DELETE /agents/{id}`
-- `GET /agents/{id}/character`, `GET /agents/{id}/budget`, `GET /agents/{id}/skills` → соответствующие срезы AgentConfig (или просто вернуть весь AgentConfig и фильтровать на фронте — проще и достаточно на этом объёме данных)
-- `GET /agents/{id}/log?limit=` → AgentDecisionLog[] (замена `psychologyData.ts: agentSessionLog[strategy]`)
-- `GET /agents/compare?ids=a,b,c` → CompareRow[]
-- `GET /agents/ranking` → RankRow[]
-- `WS /ws/agents/activity` → живой фид решений всех агентов пользователя (замена `agentsData.ts: agentActivity`, показывается на рынке/терминале)
+```json
+{
+  "name": "Импульс",
+  "strategy": "aggressive",
+  "budgetLimit": 25000
+}
+```
 
-## Симуляция — `/simulation/*`
+Бюджет разрешён от 1 000 до 100 000 USD и не может превышать резерв.
 
-- `GET /simulation/datasets` → Dataset[] (замена `tradingExtra.ts: simDatasets`)
-- `POST /simulation/datasets` — загрузка файла с историческими данными (multipart)
-- `POST /simulations` — { datasetId?, mode, agentIds[], startingCapital, speed } → Simulation (запускает backtest или live-режим)
-- `GET /simulations/{id}` → статус + `liveSimInfo`-подобный снимок
-- `WS /ws/simulations/{id}` → живой поток решений/таймлайна (замена `liveDecisions`, `liveTimeline`)
-- `GET /simulations/{id}/results` → simResults-подобная структура (метрики + equity curve)
-- `GET /simulations/{id}/export?format=csv|pdf` → файл (замена `exportContentOptions`, `exportPreview`)
+## Рынок
 
-## Каталог — `/catalog`
+- `GET /market/indices` — учебные индексы;
+- `GET /instruments` — все акции;
+- `GET /instruments/{ticker}` — подробности;
+- `GET /instruments/{ticker}/quote` — текущая цена;
+- `GET /instruments/{ticker}/candles?timeframe=5m&limit=100` — свечи;
+- `GET /instruments/{ticker}/news` — учебные новости;
+- `WS /ws/market/{ticker}` — поток котировок.
 
-- `GET /catalog?type=&query=` → CatalogStock[] (замена `psychologyData.ts: catalogStocks`) — по сути алиас/расширение `GET /instruments` с фильтром по типу, не заводи отдельную сущность
+Разрешённые таймфреймы: `1m`, `5m`, `15m`, `1h`, `1d`.
 
-## Команды — `/teams/*`
+## История торговли: только чтение
 
-- `GET /teams` → TeamInfo[] (замена `psychologyData.ts: teams`)
-- `POST /teams` — { name }
-- `GET /teams/{id}` → TeamInfo + участники + сводка (`relationsSummary`)
-- `GET /teams/{id}/feed` → FeedEvent[] (замена `feedEvents` — фильтр AgentDecisionLog по агентам команды)
-- `POST /teams/{id}/members` — { userId } (или invite-flow, если понадобится)
+- `GET /orders?status=&agentId=` — заявки;
+- `GET /trades?limit=&before=&agentId=` — сделки;
+- `GET /trades/stats` — агрегаты;
+- `GET /portfolio` — совместимый общий снимок;
+- `GET /portfolio/{ticker}` — совместимый просмотр позиции.
 
-## Журнал — `/journal`
+В публичном Controller нет `POST /orders`, preview и отмены ручной заявки.
+Новые операции создаются только через `executeAgentOrder` внутри backend.
 
-- `GET /journal?limit=&agentId=` → journalEntries-подобная структура — снова AgentDecisionLog, без фильтра по конкретному агенту
+## Безопасность владения
 
-## Настройки — `/settings/*`
+Каждый защищённый метод получает UUID пользователя из проверенного JWT.
+Перед чтением или изменением агент ищется по паре `agentId + accountId`.
+Переданный чужой UUID не даёт доступ к чужим данным.
 
-- `GET /settings/profile`, `PUT /settings/profile` — displayName и т.п.
-- `PUT /settings/security/password` — { currentPassword, newPassword }
-- `GET /settings/notifications`, `PUT /settings/notifications`
-- `GET /settings/trading`, `PUT /settings/trading`
-- `GET /settings/data`, `PUT /settings/data` — { provider: "synthetic" | "finnhub" } (переключатель источника рыночных данных, см. `03-market-data-and-agents-engine.md`)
-- `GET /settings/display`, `PUT /settings/display`
-- `GET /settings/metrics`, `PUT /settings/metrics`
+## WebSocket
 
-## Что осознанно остаётся на фронте (не эндпоинты)
+Пример адреса:
 
-- `lib/changelog.json` — чейнджлог версий сайта, это про релизы фронта, не
-  про данные пользователя. Не переноси на бэкенд без явной причины.
-- `lib/emptyStates.ts` — статичные тексты пустых состояний, это UI-копирайт,
-  не данные.
+```text
+ws://localhost:8080/ws/market/AAPL
+```
+
+В продакшене на HTTPS-странице нужен `wss://`.

@@ -7,4 +7,6 @@
 - `common` contains shared HTTP error handling.
 - `auth` contains the authentication feature, split into layers.
 - `market` contains synthetic prices, charts, and market WebSocket updates.
-- `trading` contains orders, completed trades, and portfolio positions.
+- `dashboard` aggregates account value, goal progress, agents, and activity.
+- `agents` owns agent wallets, positions, strategies, and decision history.
+- `trading` executes agent-owned orders and exposes read-only history.

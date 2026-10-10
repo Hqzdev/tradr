@@ -93,11 +93,12 @@ public class AgentService {
 
     @Transactional
     public AgentResponse allocation(UUID userId, UUID id, BigDecimal target) {
+        AgentBudget budget = new AgentBudget(target, "USD");
+        Account account = accounts.findByUserIdForUpdate(userId).orElseThrow();
         Agent agent = owned(userId, id);
         if (agent.getStatus() != AgentStatus.PAUSED) throw new AgentAllocationException("Сначала поставьте агента на паузу");
         AgentWallet wallet = wallet(id);
-        Account account = account(userId);
-        BigDecimal delta = target.setScale(2).subtract(wallet.getInitialCash());
+        BigDecimal delta = budget.limit().subtract(wallet.getInitialCash());
         if (delta.signum() > 0) {
             if (account.getBalance().compareTo(delta) < 0) throw new AgentAllocationException("Недостаточно денег в резерве");
             account.debit(delta);
@@ -108,6 +109,11 @@ public class AgentService {
             catch (IllegalArgumentException exception) { throw new AgentAllocationException("Нельзя вернуть деньги, вложенные в открытые позиции"); }
             account.credit(refund);
         }
+        configs.findById(id).orElseThrow().updateBudget(budget);
+        if (delta.signum() != 0) logs.save(new AgentDecisionLog(id, AgentAction.WAIT,
+                "Капитал изменён до " + budget.limit().toPlainString() + " USD. "
+                        + (delta.signum() > 0 ? "Получено из резерва " : "Возвращено в резерв ")
+                        + delta.abs().toPlainString() + " USD", "[]", null));
         snapshot(agent);
         return response(agent);
     }
@@ -125,6 +131,29 @@ public class AgentService {
         Account account = account(userId);
         account.credit(wallet(id).drain());
         agent.setStatus(AgentStatus.ARCHIVED);
+    }
+
+    @Transactional
+    public AgentResponse withdrawProfit(UUID userId, UUID id) {
+        Account account = accounts.findByUserIdForUpdate(userId).orElseThrow();
+        Agent agent = owned(userId, id);
+        if (agent.getStatus() != AgentStatus.PAUSED) {
+            throw new AgentAllocationException("Поставьте агента на паузу перед переводом прибыли");
+        }
+        AgentWallet wallet = wallet(id);
+        BigDecimal holdings = positions.findByIdAgentId(id).stream()
+                .map(this::marketValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal available = wallet.getCashBalance().add(holdings).subtract(wallet.getInitialCash())
+                .min(wallet.getCashBalance()).setScale(2, RoundingMode.DOWN);
+        if (available.signum() <= 0) {
+            throw new AgentAllocationException("Свободной прибыли пока нет. Деньги в открытых позициях станут доступны после продажи");
+        }
+        wallet.debit(available);
+        account.credit(available);
+        snapshot(agent);
+        logs.save(new AgentDecisionLog(id, AgentAction.WAIT,
+                "Прибыль " + available.toPlainString() + " USD переведена в резерв", "[]", null));
+        return response(agent);
     }
 
     @Transactional
@@ -180,7 +209,8 @@ public class AgentService {
             AgentPosition position = existing.get();
             BigDecimal returnPercent = quote.price().subtract(position.getAveragePrice())
                     .divide(position.getAveragePrice(), 6, RoundingMode.HALF_UP).multiply(ONE_HUNDRED);
-            boolean timedOut = step - position.getOpenedStep() >= MAX_HOLDING_STEPS;
+            boolean timedOut = agent.getStrategy() != AgentStrategy.PRO_QUANT
+                    && step - position.getOpenedStep() >= MAX_HOLDING_STEPS;
             if (returnPercent.compareTo(policy.takeProfit()) >= 0 || returnPercent.compareTo(policy.stopLoss()) <= 0 || timedOut) {
                 sell(agent, instrument, quote, position, step, returnPercent, timedOut);
             }
@@ -207,7 +237,9 @@ public class AgentService {
             UUID orderId = trading.executeAgentOrder(agent.getAccountId(), agent.getId(), instrument, OrderSide.BUY, quantity, quote, step);
             tradedAt(key, step);
             logs.save(new AgentDecisionLog(agent.getId(), AgentAction.BUY,
-                    "Купил " + instrument.getTicker() + ": стратегия увидела подходящую цену", "[]", orderId));
+                    "Купил " + instrument.getTicker() + (agent.getStrategy() == AgentStrategy.PRO_QUANT
+                            ? ": Квант Pro обнаружил умеренную просадку; сохраняет резерв 20% и ограничивает позицию 12%"
+                            : ": стратегия увидела подходящую цену"), "[]", orderId));
             snapshot(agent);
         } catch (RuntimeException ignored) {
             logs.save(new AgentDecisionLog(agent.getId(), AgentAction.WAIT, "Пропустил сделку: свободных денег недостаточно", "[]", null));

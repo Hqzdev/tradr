@@ -18,7 +18,7 @@ class AgentBudgetTest {
     @Test
     void rejectsLimitsOutsideEducationalAccount() {
         assertThrows(IllegalArgumentException.class, () -> new AgentBudget(new BigDecimal("999.99"), "USD"));
-        assertThrows(IllegalArgumentException.class, () -> new AgentBudget(new BigDecimal("100000.01"), "USD"));
+        assertThrows(IllegalArgumentException.class, () -> new AgentBudget(AgentBudget.MAXIMUM_LIMIT.add(new BigDecimal("0.01")), "USD"));
     }
 
     @Test

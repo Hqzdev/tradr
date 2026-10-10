@@ -6,5 +6,6 @@ import java.util.List;
 
 public record DashboardResponse(BigDecimal startingCapital, BigDecimal totalWealth, BigDecimal reserveCash,
                                 BigDecimal allocatedCapital, BigDecimal profit, BigDecimal profitPercent,
-                                BigDecimal goalValue, BigDecimal goalProgress, boolean accelerationEnabled,
+                                BigDecimal goalValue, BigDecimal goalProgress, int level,
+                                BigDecimal nextLevelReward, boolean accelerationEnabled,
                                 List<AgentResponse> agents, List<DashboardActivityResponse> activity) {}

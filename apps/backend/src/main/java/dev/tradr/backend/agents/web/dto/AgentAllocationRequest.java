@@ -7,5 +7,5 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record AgentAllocationRequest(
-        @NotNull @DecimalMin("1000.00") @DecimalMax("100000.00") @Digits(integer = 6, fraction = 2) BigDecimal budgetLimit
+        @NotNull @DecimalMin("1000.00") @DecimalMax("1000000000000.00") @Digits(integer = 13, fraction = 2) BigDecimal budgetLimit
 ) {}

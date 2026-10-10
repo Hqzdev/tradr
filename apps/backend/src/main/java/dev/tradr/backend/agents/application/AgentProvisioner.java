@@ -55,7 +55,9 @@ public class AgentProvisioner {
                 agent.getId(),
                 profileJson(profile, signal),
                 budget,
-                "{}"
+                strategy == AgentStrategy.PRO_QUANT
+                        ? "{\"signalAnalysis\":98,\"riskManagement\":97,\"discipline\":99}"
+                        : "{}"
         ));
         account.debit(budget.limit());
         wallets.save(new AgentWallet(agent.getId(), budget.limit(), account.getCurrency()));
@@ -67,7 +69,7 @@ public class AgentProvisioner {
         try {
             return AgentStrategy.valueOf(value.toUpperCase(Locale.ROOT));
         } catch (Exception exception) {
-            throw new IllegalArgumentException("strategy must be aggressive, careful or random");
+            throw new IllegalArgumentException("Unknown agent strategy");
         }
     }
 

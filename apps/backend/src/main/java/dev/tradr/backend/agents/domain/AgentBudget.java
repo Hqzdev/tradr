@@ -7,14 +7,14 @@ public record AgentBudget(BigDecimal limit, String currency) {
 
     public static final BigDecimal DEFAULT_LIMIT = new BigDecimal("75000.00");
     public static final BigDecimal MINIMUM_LIMIT = new BigDecimal("1000.00");
-    public static final BigDecimal MAXIMUM_LIMIT = new BigDecimal("100000.00");
+    public static final BigDecimal MAXIMUM_LIMIT = new BigDecimal("1000000000000.00");
     public static final String DEFAULT_CURRENCY = "USD";
 
     public AgentBudget {
         Objects.requireNonNull(limit, "limit");
         Objects.requireNonNull(currency, "currency");
         if (limit.compareTo(MINIMUM_LIMIT) < 0 || limit.compareTo(MAXIMUM_LIMIT) > 0) {
-            throw new IllegalArgumentException("budgetLimit must be between 1000 and 100000");
+            throw new IllegalArgumentException("budgetLimit must be between " + MINIMUM_LIMIT + " and " + MAXIMUM_LIMIT);
         }
         if (!DEFAULT_CURRENCY.equals(currency)) {
             throw new IllegalArgumentException("budget currency must be USD");

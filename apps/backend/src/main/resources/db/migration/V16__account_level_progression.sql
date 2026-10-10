@@ -1,0 +1,5 @@
+ALTER TABLE accounts
+    ADD COLUMN level INTEGER NOT NULL DEFAULT 1;
+
+UPDATE accounts
+SET goal_value = 110000.00;

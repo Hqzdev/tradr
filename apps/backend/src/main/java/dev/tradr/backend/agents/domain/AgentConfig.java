@@ -12,4 +12,5 @@ public class AgentConfig {
  protected AgentConfig() {}
  public AgentConfig(UUID agentId,String character,AgentBudget budget,String skills){this.agentId=agentId;this.character=character;this.budget=budget;this.skills=skills;}
  public String getCharacter(){return character;} public AgentBudget getBudget(){return budget;} public String getSkills(){return skills;}
+ public void updateBudget(AgentBudget budget) { this.budget = java.util.Objects.requireNonNull(budget); }
 }

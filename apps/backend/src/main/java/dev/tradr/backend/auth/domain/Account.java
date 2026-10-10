@@ -30,6 +30,9 @@ public class Account {
     @Column(name = "goal_value", nullable = false)
     private BigDecimal goalValue;
 
+    @Column(name = "level", nullable = false)
+    private int level = 1;
+
     @Column(name = "acceleration_enabled", nullable = false)
     private boolean accelerationEnabled = true;
 
@@ -44,6 +47,7 @@ public class Account {
         this.currency = currency;
         this.initialBalance = balance;
         this.goalValue = balance.multiply(new BigDecimal("1.10")).setScale(2);
+        this.level = 1;
     }
 
     // геттеры - без сеттера на id потому что id генерируется автоматически и не должен изменяться
@@ -53,6 +57,7 @@ public class Account {
     public String getCurrency() { return currency; }
     public BigDecimal getInitialBalance() { return initialBalance; }
     public BigDecimal getGoalValue() { return goalValue; }
+    public int getLevel() { return level; }
     public boolean isAccelerationEnabled() { return accelerationEnabled; }
     public Instant getCreatedAt() { return createdAt; }
 
@@ -64,8 +69,12 @@ public class Account {
         balance = balance.add(amount).setScale(2);
     }
 
-    public void updatePreferences(BigDecimal goalValue, Boolean accelerationEnabled) {
-        if (goalValue != null) this.goalValue = goalValue.setScale(2);
+    public void advanceLevel(BigDecimal nextGoalValue) {
+        level++;
+        goalValue = nextGoalValue.setScale(2);
+    }
+
+    public void updatePreferences(Boolean accelerationEnabled) {
         if (accelerationEnabled != null) this.accelerationEnabled = accelerationEnabled;
     }
 }

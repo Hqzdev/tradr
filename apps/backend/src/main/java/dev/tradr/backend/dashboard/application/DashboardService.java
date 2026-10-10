@@ -25,35 +25,43 @@ public class DashboardService {
     private final AgentRepository agents;
     private final AgentDecisionLogRepository logs;
     private final AgentService agentService;
+    private final AccountProgression progression;
 
     public DashboardService(AccountRepository accounts, AgentRepository agents,
-                            AgentDecisionLogRepository logs, AgentService agentService) {
+                            AgentDecisionLogRepository logs, AgentService agentService,
+                            AccountProgression progression) {
         this.accounts = accounts;
         this.agents = agents;
         this.logs = logs;
         this.agentService = agentService;
+        this.progression = progression;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public DashboardResponse dashboard(UUID userId) {
-        Account account = account(userId);
+        Account account = accounts.findByUserIdForUpdate(userId)
+                .orElseThrow(() -> new IllegalStateException("Account not found"));
         List<AgentResponse> agentResponses = agentService.list(userId);
         BigDecimal agentValue = agentResponses.stream().map(AgentResponse::totalValue).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal allocated = agentResponses.stream().map(AgentResponse::budgetLimit).reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal total = account.getBalance().add(agentValue).setScale(2);
+        progression.advanceFor(account, total);
+        total = account.getBalance().add(agentValue).setScale(2);
         BigDecimal profit = total.subtract(account.getInitialBalance()).setScale(2);
         BigDecimal profitPercent = percent(profit, account.getInitialBalance());
-        BigDecimal targetGain = account.getGoalValue().subtract(account.getInitialBalance());
-        BigDecimal progress = targetGain.signum() <= 0 ? ONE_HUNDRED : profit.divide(targetGain, 4, RoundingMode.HALF_UP).multiply(ONE_HUNDRED).max(BigDecimal.ZERO).min(ONE_HUNDRED).setScale(2);
+        BigDecimal targetGain = account.getGoalValue().subtract(progression.previousMilestone(account));
+        BigDecimal progressGain = total.subtract(progression.previousMilestone(account));
+        BigDecimal progress = targetGain.signum() <= 0 ? ONE_HUNDRED : progressGain.divide(targetGain, 4, RoundingMode.HALF_UP).multiply(ONE_HUNDRED).max(BigDecimal.ZERO).min(ONE_HUNDRED).setScale(2);
         return new DashboardResponse(account.getInitialBalance(), total, account.getBalance(), allocated, profit,
-                profitPercent, account.getGoalValue(), progress, account.isAccelerationEnabled(), agentResponses,
-                activity(account.getId()));
+                profitPercent, account.getGoalValue(), progress, account.getLevel(), progression.nextLevelReward(account),
+                account.isAccelerationEnabled(), agentResponses, activity(account.getId()));
     }
 
     @Transactional
     public DashboardResponse update(UUID userId, AccountPreferencesRequest request) {
-        Account account = account(userId);
-        account.updatePreferences(request.goalValue(), request.accelerationEnabled());
+        Account account = accounts.findByUserIdForUpdate(userId)
+                .orElseThrow(() -> new IllegalStateException("Account not found"));
+        account.updatePreferences(request.accelerationEnabled());
         return dashboard(userId);
     }
 
@@ -71,5 +79,4 @@ public class DashboardService {
     }
 
     private BigDecimal percent(BigDecimal value, BigDecimal base) { return base.signum() == 0 ? BigDecimal.ZERO : value.divide(base, 4, RoundingMode.HALF_UP).multiply(ONE_HUNDRED).setScale(2); }
-    private Account account(UUID userId) { return accounts.findByUserId(userId).orElseThrow(() -> new IllegalStateException("Account not found")); }
 }

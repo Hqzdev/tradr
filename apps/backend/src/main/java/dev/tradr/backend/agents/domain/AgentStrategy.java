@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public enum AgentStrategy {
+    PRO_QUANT(new StrategyProfile("Квант Pro", new BigDecimal("-3.00"), new BigDecimal("2.50"), List.of(new BigDecimal("-1.00")))),
     AGGRESSIVE(new StrategyProfile("Агрессивный", new BigDecimal("-5.00"), new BigDecimal("3.00"), List.of(new BigDecimal("-5.00"), new BigDecimal("-4.00"), new BigDecimal("-3.00"), new BigDecimal("-2.00"), new BigDecimal("-1.00"), new BigDecimal("1.00"), new BigDecimal("2.00"), new BigDecimal("3.00")))),
     CAREFUL(new StrategyProfile("Осторожный", new BigDecimal("-2.00"), new BigDecimal("2.00"), List.of(new BigDecimal("-2.00"), new BigDecimal("-1.00"), new BigDecimal("1.00"), new BigDecimal("2.00")))),
     RANDOM(new StrategyProfile("Случайный", new BigDecimal("-8.00"), new BigDecimal("8.00"), List.of(new BigDecimal("-8.00"), new BigDecimal("-7.00"), new BigDecimal("-6.00"), new BigDecimal("-5.00"), new BigDecimal("-4.00"), new BigDecimal("-3.00"), new BigDecimal("-2.00"), new BigDecimal("-1.00"), new BigDecimal("1.00"), new BigDecimal("2.00"), new BigDecimal("3.00"), new BigDecimal("4.00"), new BigDecimal("5.00"), new BigDecimal("6.00"), new BigDecimal("7.00"), new BigDecimal("8.00"))));

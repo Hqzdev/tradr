@@ -1,38 +1,44 @@
 import type { Config } from "tailwindcss";
 
+const v = (name: string) => `rgb(var(--c-${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        ink: "#131313",
-        charcoal: "#222222",
-        steel: "#6a6a6a",
-        fog: "#acacac",
-        bone: "#f2f2f2",
-        canvas: "#f8f7fb",
-        card: "#ffffff",
+        // Token values live in CSS variables (app/globals.css): light values on
+        // :root for public pages, dark values inside `.theme-dark` (the app
+        // shell). `<alpha-value>` keeps opacity modifiers like bg-bone/70 working.
+        ink: v("ink"),
+        charcoal: v("charcoal"),
+        steel: v("steel"),
+        fog: v("fog"),
+        bone: v("bone"),
+        canvas: v("canvas"),
+        card: v("card"),
+        raised: v("raised"),
         magenta: {
-          DEFAULT: "#ff37c7",
-          deep: "#f50db4",
-          tint: "#fdecf8",
-          ring: "#ffd3ef",
+          DEFAULT: v("accent"),
+          deep: v("accent-deep"),
+          tint: v("accent-tint"),
+          ring: v("accent-ring"),
         },
         positive: {
-          DEFAULT: "#0c8911",
-          tint: "#dcf3dd",
+          DEFAULT: v("positive"),
+          tint: v("positive-tint"),
         },
         negative: {
-          DEFAULT: "#e0294f",
-          tint: "#fbe3e8",
+          DEFAULT: v("negative"),
+          tint: v("negative-tint"),
         },
-        violet: "#8251fb",
+        violet: v("violet"),
         cyan: "#2abdff",
         teal: "#00c3a0",
         warning: {
-          DEFAULT: "#c9670a",
-          tint: "#fff5e8",
-          ring: "#f6d6ae",
+          DEFAULT: v("warning"),
+          tint: v("warning-tint"),
+          ring: v("warning-ring"),
         },
       },
       fontFamily: {
@@ -50,18 +56,29 @@ const config: Config = {
       },
       borderRadius: {
         card: "20px",
+        panel: "24px",
         btn: "14px",
         pill: "999999px",
       },
       boxShadow: {
-        soft: "0 1px 2px rgba(19,19,19,0.04)",
-        elevated: "0 10px 30px rgba(19,19,19,0.06)",
-        widget: "0 0 0 1px rgba(19,19,19,0.03), 0 8px 24px rgba(19,19,19,0.05)",
+        soft: "var(--shadow-soft)",
+        elevated: "var(--shadow-elevated)",
+        widget: "var(--shadow-widget)",
+        glow: "0 0 0 1px rgba(108,92,255,0.35), 0 10px 30px -10px rgba(108,92,255,0.55)",
       },
       spacing: {
         4.5: "18px",
       },
       keyframes: {
+        qReveal: {
+          "0%": { opacity: "0", transform: "translateY(14px)", filter: "blur(6px)" },
+          "100%": { opacity: "1", transform: "translateY(0)", filter: "blur(0)" },
+        },
+        qPop: {
+          "0%": { opacity: "0", transform: "scale(0.94)" },
+          "60%": { opacity: "1", transform: "scale(1.02)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
         shimmer: {
           "0%": { backgroundPosition: "-400px 0" },
           "100%": { backgroundPosition: "400px 0" },
@@ -125,6 +142,8 @@ const config: Config = {
         },
       },
       animation: {
+        reveal: "qReveal 620ms cubic-bezier(0.22,1,0.36,1) both",
+        pop: "qPop 420ms cubic-bezier(0.22,1,0.36,1) both",
         shimmer: "shimmer 1.4s linear infinite",
         spin800: "spin800 800ms linear infinite",
         "slide-down-fade": "slideDownFade 220ms cubic-bezier(0.22,1,0.36,1)",

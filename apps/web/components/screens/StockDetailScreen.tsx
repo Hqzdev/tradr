@@ -7,12 +7,16 @@ import { ArrowLeft01Icon, Bookmark01Icon, BookmarkCheck01Icon, Refresh01Icon } f
 import StockChart from "@/components/market/StockChart";
 import StockMark from "@/components/market/StockMark";
 import Button from "@/components/ui/Button";
+import DeltaPill from "@/components/ui/DeltaPill";
+import Money from "@/components/ui/Money";
 import EmptyState from "@/components/ui/EmptyState";
 import Tabs from "@/components/ui/Tabs";
 import { getCandles, getInstrumentDetails, type InstrumentDetails, type MarketCandle, type MarketTimeframe } from "@/lib/api/market";
 import { getOrders, getTrades, type Order, type Trade } from "@/lib/api/trading";
 import { getAgentPerformance, listAgents } from "@/lib/api/agents";
 import type { StockProfile } from "@/lib/stocks";
+import { useIsMobile } from "@/lib/useIsMobile";
+import MobileStockDetail from "@/components/mobile/MobileStockDetail";
 
 function money(value: number): string {
   return new Intl.NumberFormat("ru-RU", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(value);
@@ -39,6 +43,7 @@ export default function StockDetailScreen({ profile }: { profile: StockProfile }
   const [chartError, setChartError] = useState("");
   const [activityTab, setActivityTab] = useState("Сделки агентов");
   const [watched, setWatched] = useState(false);
+  const mobile = useIsMobile();
 
   const loadAccountData = useCallback(async () => {
     const [nextTrades, nextOrders, nextAgents] = await Promise.all([getTrades(), getOrders(), listAgents()]);
@@ -79,61 +84,157 @@ export default function StockDetailScreen({ profile }: { profile: StockProfile }
   const instrument = details?.instrument;
   const price = instrument?.price ?? profile.demoPrice;
   const change = instrument?.changePercent ?? profile.demoChangePercent;
-  const positive = change >= 0;
   const filteredTrades = useMemo(() => trades.filter((trade) => trade.ticker === profile.ticker), [profile.ticker, trades]);
   const filteredOrders = useMemo(() => orders.filter((order) => order.ticker === profile.ticker), [orders, profile.ticker]);
   const metrics = details?.metrics.slice(0, 6) ?? [];
 
-  return (
-    <div className="stock-detail pb-16">
-      <Link href="/market" className="focus-ring inline-flex items-center gap-1.5 rounded-lg text-body-sm text-steel transition-colors hover:text-ink">
-        <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={2} /> Рынок
-      </Link>
-
-      <header className="stock-detail-header sticky top-0 z-30 -mx-2 mt-4 flex flex-wrap items-center gap-3 rounded-[22px] border border-white/80 bg-[#f8f7fb]/90 px-2 py-3 backdrop-blur-xl">
-        <StockMark stock={profile} size={54} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2"><h1 className="text-heading-sm font-[550] text-ink">{profile.name}</h1><span className="text-body-sm text-steel">{profile.ticker} · {instrument?.exchange ?? profile.exchange}</span></div>
-          <div className="mt-1 flex flex-wrap items-center gap-2"><strong className="text-heading font-[535] tabular-nums text-ink">{money(price)}</strong><span className={`rounded-pill px-2 py-1 text-caption font-[600] ${positive ? "bg-positive-tint text-positive" : "bg-negative-tint text-negative"}`}>{positive ? "▲" : "▼"} {Math.abs(change).toFixed(2).replace(".", ",")}%</span><span className="text-caption text-steel">Объём {(instrument?.volume ?? 0).toLocaleString("ru-RU")}</span></div>
+  const metricsCard = (
+    <section className="q-card q-reveal p-5 sm:p-6" style={{ ["--i" as string]: 3 }}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-[16px] font-semibold text-ink">Показатели</h2>
+        <span className="text-[12px] text-steel">по данным движка</span>
+      </div>
+      {loading ? (
+        <div className="mt-4 space-y-2">{Array.from({ length: 6 }, (_, index) => <div key={index} className="skeleton h-9 rounded-[10px]" />)}</div>
+      ) : metrics.length ? (
+        <div className="mt-3 divide-y divide-white/[0.06]">
+          {metrics.map((metric, index) => (
+            <div key={metric.label} className="q-reveal flex items-center justify-between gap-3 py-3" style={{ ["--i" as string]: index + 4 }}>
+              <span className="text-[13.5px] text-steel">{metric.label}</span>
+              <strong className="q-num text-[13.5px] font-medium text-ink">{metric.value}</strong>
+            </div>
+          ))}
         </div>
-        <button type="button" className="focus-ring grid h-11 w-11 place-items-center rounded-[14px] border border-bone bg-white text-steel transition-colors hover:text-magenta-deep" onClick={() => setWatched((value) => !value)} aria-label={watched ? "Убрать из списка наблюдения" : "Добавить в список наблюдения"} aria-pressed={watched}><HugeiconsIcon icon={watched ? BookmarkCheck01Icon : Bookmark01Icon} className="h-5 w-5" strokeWidth={2} /></button>
+      ) : (
+        <p className="mt-3 text-body-sm text-steel">Метрики появятся после подключения backend.</p>
+      )}
+    </section>
+  );
+
+  if (mobile) {
+    return (
+      <MobileStockDetail
+        profile={profile}
+        details={details}
+        price={price}
+        change={change}
+        candles={candles}
+        timeframe={timeframe}
+        chartLoading={chartLoading}
+        chartError={chartError}
+        pageError={pageError}
+        loading={loading}
+        trades={filteredTrades}
+        agentObservers={agentObservers}
+        watched={watched}
+        onWatchToggle={() => setWatched((value) => !value)}
+        onTimeframeChange={setTimeframe}
+        onRetryChart={() => void loadCandles()}
+        onRetryPage={() => void loadPage()}
+      />
+    );
+  }
+
+  return (
+    <div className="stock-detail space-y-5 pb-16">
+      <header className="q-reveal flex flex-wrap items-center gap-x-6 gap-y-4" style={{ ["--i" as string]: 0 }}>
+        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-[20px] border border-white/[0.1] bg-white/[0.05]">
+          <StockMark stock={profile} size={38} />
+        </span>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-[30px] font-semibold tracking-[-0.04em] text-ink">{profile.ticker}</h1>
+            <span className="rounded-md bg-white/[0.07] px-2 py-1 text-[11px] font-semibold tracking-wide text-steel">{instrument?.exchange ?? profile.exchange}</span>
+          </div>
+          <p className="mt-0.5 text-[14px] text-steel">{profile.name}</p>
+        </div>
+        <span className="hidden h-12 w-px bg-white/[0.1] sm:block" />
+        <div>
+          <p className="text-[36px] font-semibold leading-none tracking-[-0.045em] text-ink"><Money value={price} animate={false} /></p>
+          <div className="mt-2 flex items-center gap-2">
+            <DeltaPill value={change} />
+            <span className="text-[13px] text-steel">сегодня</span>
+          </div>
+        </div>
+        <div className="pl-1">
+          <p className="text-[12px] text-steel">Объём</p>
+          <p className="q-num mt-1 text-[16px] font-medium text-ink">{(instrument?.volume ?? 0).toLocaleString("ru-RU")}</p>
+        </div>
+        <div className="ml-auto flex items-center gap-2.5">
+          <Link href="/market" className="press-98 focus-ring flex h-11 items-center gap-2 rounded-[12px] border border-white/[0.1] bg-white/[0.03] px-4 text-[14px] font-medium text-ink transition-colors hover:border-white/[0.2]">
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={2} /> Рынок
+          </Link>
+          <button type="button" className={`press-98 focus-ring flex h-11 items-center gap-2 rounded-[12px] border px-4 text-[14px] font-medium transition-colors ${watched ? "border-magenta/50 bg-magenta/15 text-magenta-deep" : "border-white/[0.1] bg-white/[0.03] text-ink hover:border-white/[0.2]"}`} onClick={() => setWatched((value) => !value)} aria-label={watched ? "Убрать из списка наблюдения" : "Добавить в список наблюдения"} aria-pressed={watched}>
+            <HugeiconsIcon icon={watched ? BookmarkCheck01Icon : Bookmark01Icon} className="h-4 w-4" strokeWidth={2} />
+            {watched ? "В наблюдении" : "Наблюдать"}
+          </button>
+        </div>
       </header>
 
-      {pageError && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-warning-ring bg-warning-tint px-4 py-3 text-body-sm text-warning"><span>{pageError}</span><Button size="sm" icon={<HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4" />} onClick={() => void loadPage()}>Повторить</Button></div>}
+      {pageError && <div className="flex animate-slide-down-fade flex-wrap items-center justify-between gap-3 rounded-[16px] border border-warning/30 bg-warning/[0.08] px-4 py-3 text-body-sm text-warning"><span>{pageError}</span><Button size="sm" icon={<HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4" />} onClick={() => void loadPage()}>Повторить</Button></div>}
 
-      <div className="mt-5 grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_350px]">
-        <StockChart candles={candles} timeframe={timeframe} loading={chartLoading} error={chartError} onTimeframeChange={setTimeframe} onRetry={() => void loadCandles()} />
-        <aside className="rounded-[24px] border border-[#ece8ee] bg-white p-5 shadow-soft xl:sticky xl:top-[126px]">
-          <p className="text-caption font-[485] uppercase tracking-[0.02em] text-magenta-deep">Торгуют агенты</p>
-          <h2 className="mt-2 text-subheading font-[550] text-ink">Наблюдение без ручных сделок</h2>
-          <p className="mt-2 text-body-sm leading-6 text-steel">Вы смотрите график и решения. Покупать и продавать эту акцию могут только запущенные агенты по своим правилам риска.</p>
-          <div className="mt-5 border-t border-bone pt-4">
-            <p className="text-caption text-steel">Сейчас держат акцию</p>
-            {agentObservers.length ? <div className="mt-2 flex flex-wrap gap-2">{agentObservers.map((name) => <span key={name} className="rounded-pill bg-magenta-tint px-3 py-1.5 text-caption font-[485] text-magenta-deep">{name}</span>)}</div> : <p className="mt-2 text-body-sm text-ink">Открытых позиций нет</p>}
-          </div>
-          <Link href="/agents" className="mt-5 block text-body-sm font-[485] text-magenta-deep">Управлять агентами →</Link>
-        </aside>
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="q-reveal" style={{ ["--i" as string]: 1 }}>
+          <StockChart candles={candles} timeframe={timeframe} loading={chartLoading} error={chartError} onTimeframeChange={setTimeframe} onRetry={() => void loadCandles()} />
+        </div>
+        <div className="space-y-5 xl:sticky xl:top-[140px]">
+          <aside className="q-card q-reveal overflow-hidden p-5" style={{ ["--i" as string]: 2, background: "radial-gradient(120% 90% at 100% 0%, rgba(108,92,255,0.18) 0%, rgba(108,92,255,0) 60%), linear-gradient(180deg,#131318 0%,#0d0d10 100%)" }}>
+            <p className="flex items-center gap-2 text-[13px] text-steel"><span className="q-live text-magenta" />Торгуют агенты</p>
+            <h2 className="mt-2 text-[18px] font-semibold tracking-[-0.02em] text-ink">Наблюдение без ручных сделок</h2>
+            <p className="mt-2 text-[13.5px] leading-6 text-steel">Вы смотрите график и решения. Покупать и продавать эту акцию могут только запущенные агенты по своим правилам риска.</p>
+            <div className="mt-5 border-t border-white/[0.07] pt-4">
+              <p className="text-[12.5px] text-steel">Сейчас держат акцию</p>
+              {agentObservers.length ? <div className="mt-2.5 flex flex-wrap gap-2">{agentObservers.map((name, index) => <span key={name} className="q-pop rounded-full border border-magenta/30 bg-magenta/[0.14] px-3 py-1.5 text-[12.5px] font-medium text-magenta-deep" style={{ ["--i" as string]: index }}>{name}</span>)}</div> : <p className="mt-2 text-body-sm text-ink">Открытых позиций нет</p>}
+            </div>
+            <Link href="/agents" className="group mt-5 flex items-center gap-1.5 text-[14px] font-medium text-magenta-deep transition-colors hover:text-ink">Управлять агентами <span className="transition-transform group-hover:translate-x-0.5">→</span></Link>
+          </aside>
+          {metricsCard}
+        </div>
       </div>
 
-      <section className="mt-5 rounded-[24px] border border-[#ece8ee] bg-white p-5 shadow-soft sm:p-6">
-        <h2 className="text-subheading font-[550] text-ink">Ключевые показатели</h2>
-        {loading ? <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="skeleton h-[92px] rounded-[16px]" />)}</div> : metrics.length ? <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{metrics.map((metric) => <div key={metric.label} className="rounded-[16px] bg-[#fafafb] p-4"><span className="text-caption text-steel">{metric.label}</span><strong className="mt-2 block text-subheading font-[535] text-ink">{metric.value}</strong></div>)}</div> : <p className="mt-3 text-body-sm text-steel">Метрики появятся после подключения backend.</p>}
+      <section className="q-card q-reveal p-5 sm:p-6" style={{ ["--i" as string]: 4 }}>
+        <h2 className="text-[16px] font-semibold text-ink">О компании</h2>
+        <p className="mt-3 max-w-3xl text-[14.5px] leading-7 text-steel">{profile.description}</p>
+        {details?.news?.length ? (
+          <div className="mt-6 border-t border-white/[0.07] pt-5">
+            <h3 className="text-[14px] font-semibold text-ink">Новости инструмента</h3>
+            <div className="mt-3 divide-y divide-white/[0.06]">
+              {details.news.slice(0, 3).map((item, index) => (
+                <div key={`${item.source}-${item.headline}`} className="q-reveal flex items-center gap-4 py-3.5" style={{ ["--i" as string]: index + 5 }}>
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[11px] border border-white/[0.08] bg-white/[0.04] text-[13px] font-bold text-ink">{item.source.slice(0, 1)}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[12px] text-steel">{item.source} · {item.time}</p>
+                    <p className="mt-0.5 text-[14px] text-ink">{item.headline}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
       </section>
 
-      <section className="mt-5 rounded-[24px] border border-[#ece8ee] bg-white p-5 shadow-soft sm:p-6">
-        <h2 className="text-subheading font-[550] text-ink">О компании</h2>
-        <p className="mt-3 max-w-3xl text-body leading-7 text-steel">{profile.description}</p>
-        {details?.news?.length ? <div className="mt-6 border-t border-bone pt-5"><h3 className="text-body-sm font-[600] text-ink">Новости инструмента</h3><div className="mt-3 grid gap-2">{details.news.slice(0, 3).map((item) => <div key={`${item.source}-${item.headline}`} className="flex flex-col justify-between gap-1 rounded-[14px] bg-[#fafafb] px-4 py-3 sm:flex-row"><span className="text-body-sm text-ink">{item.headline}</span><small className="shrink-0 text-caption text-steel">{item.source} · {item.time}</small></div>)}</div></div> : null}
-      </section>
-
-      <section className="mt-5 rounded-[24px] border border-[#ece8ee] bg-white p-5 shadow-soft sm:p-6">
+      <section className="q-card q-reveal p-5 sm:p-6" style={{ ["--i" as string]: 5 }}>
         <Tabs options={["Сделки агентов", "Заявки агентов"]} value={activityTab} onChange={setActivityTab} />
-        <div className="mt-4 overflow-x-auto">
+        <div key={activityTab} className="mt-4 animate-fade-in overflow-x-auto">
           {activityTab === "Сделки агентов" ? (
-            filteredTrades.length ? <table className="w-full min-w-[700px] text-left text-body-sm"><thead className="text-caption text-steel"><tr><th className="pb-3 font-[500]">Дата</th><th className="pb-3 font-[500]">Агент</th><th className="pb-3 font-[500]">Сторона</th><th className="pb-3 font-[500]">Количество</th><th className="pb-3 font-[500]">Цена</th><th className="pb-3 text-right font-[500]">Итого</th></tr></thead><tbody>{filteredTrades.map((trade) => <tr key={trade.id} className="border-t border-bone"><td className="py-3 text-steel">{dateTime(trade.executedAt)}</td><td className="py-3 font-[485] text-ink">{trade.agentName}</td><td className={`py-3 font-[550] ${trade.side.toLowerCase() === "buy" ? "text-positive" : "text-negative"}`}>{trade.side.toLowerCase() === "buy" ? "Покупка" : "Продажа"}</td><td className="py-3 tabular-nums">{trade.quantity}</td><td className="py-3 tabular-nums">{money(trade.price)}</td><td className="py-3 text-right tabular-nums">{money(trade.total)}</td></tr>)}</tbody></table> : <EmptyState compact title="Сделок по этой акции пока нет" description="Агентские сделки появятся здесь после исполнения." />
-          ) : filteredOrders.length ? <table className="w-full min-w-[620px] text-left text-body-sm"><thead className="text-caption text-steel"><tr><th className="pb-3 font-[500]">Дата</th><th className="pb-3 font-[500]">Сторона</th><th className="pb-3 font-[500]">Тип</th><th className="pb-3 font-[500]">Количество</th><th className="pb-3 text-right font-[500]">Статус</th></tr></thead><tbody>{filteredOrders.map((order) => <tr key={order.id} className="border-t border-bone"><td className="py-3 text-steel">{dateTime(order.createdAt)}</td><td className="py-3">{order.side.toLowerCase() === "buy" ? "Покупка" : "Продажа"}</td><td className="py-3">{order.orderType.toLowerCase() === "market" ? "Рыночная" : "Лимитная"}</td><td className="py-3 tabular-nums">{order.quantity}</td><td className="py-3 text-right"><span className="rounded-pill bg-[#f3eff5] px-2 py-1 text-caption text-steel">{order.status}</span></td></tr>)}</tbody></table> : <EmptyState compact title="Заявок по этой акции пока нет" description="Рыночные и лимитные заявки появятся здесь." />}
+            filteredTrades.length ? (
+              <table className="w-full min-w-[700px] text-left text-[14px]">
+                <thead className="text-[12.5px] text-steel"><tr><th className="pb-3 font-medium">Дата</th><th className="pb-3 font-medium">Агент</th><th className="pb-3 font-medium">Сторона</th><th className="pb-3 font-medium">Количество</th><th className="pb-3 font-medium">Цена</th><th className="pb-3 text-right font-medium">Итого</th></tr></thead>
+                <tbody>{filteredTrades.map((trade) => <tr key={trade.id} className="border-t border-white/[0.06] transition-colors hover:bg-white/[0.02]"><td className="py-3.5 text-steel">{dateTime(trade.executedAt)}</td><td className="py-3.5 font-medium text-ink">{trade.agentName}</td><td className="py-3.5"><SidePill buy={trade.side.toLowerCase() === "buy"} /></td><td className="q-num py-3.5 text-ink">{trade.quantity}</td><td className="q-num py-3.5 text-ink">{money(trade.price)}</td><td className="q-num py-3.5 text-right font-medium text-ink">{money(trade.total)}</td></tr>)}</tbody>
+              </table>
+            ) : <EmptyState compact title="Сделок по этой акции пока нет" description="Агентские сделки появятся здесь после исполнения." />
+          ) : filteredOrders.length ? (
+            <table className="w-full min-w-[620px] text-left text-[14px]">
+              <thead className="text-[12.5px] text-steel"><tr><th className="pb-3 font-medium">Дата</th><th className="pb-3 font-medium">Сторона</th><th className="pb-3 font-medium">Тип</th><th className="pb-3 font-medium">Количество</th><th className="pb-3 text-right font-medium">Статус</th></tr></thead>
+              <tbody>{filteredOrders.map((order) => <tr key={order.id} className="border-t border-white/[0.06] transition-colors hover:bg-white/[0.02]"><td className="py-3.5 text-steel">{dateTime(order.createdAt)}</td><td className="py-3.5"><SidePill buy={order.side.toLowerCase() === "buy"} /></td><td className="py-3.5 text-ink">{order.orderType.toLowerCase() === "market" ? "Рыночная" : "Лимитная"}</td><td className="q-num py-3.5 text-ink">{order.quantity}</td><td className="py-3.5 text-right"><span className="rounded-full bg-white/[0.07] px-2.5 py-1 text-[12px] text-charcoal">{order.status}</span></td></tr>)}</tbody>
+            </table>
+          ) : <EmptyState compact title="Заявок по этой акции пока нет" description="Рыночные и лимитные заявки появятся здесь." />}
         </div>
       </section>
     </div>
   );
+}
+
+function SidePill({ buy }: { buy: boolean }) {
+  return <span className={`rounded-full px-2.5 py-1 text-[12px] font-semibold ${buy ? "bg-positive/[0.12] text-positive" : "bg-negative/[0.12] text-negative"}`}>{buy ? "Покупка" : "Продажа"}</span>;
 }

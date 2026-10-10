@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import clsx from "@/lib/clsx";
 import Card from "@/components/ui/Card";
 
@@ -6,29 +7,33 @@ export default function StatTile({
   value,
   caption,
   tone = "default",
+  icon,
+  index = 0,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   caption?: string;
-  tone?: "default" | "positive";
+  tone?: "default" | "positive" | "negative" | "warning";
+  icon?: ReactNode;
+  index?: number;
 }) {
   return (
-    <Card
-      className={clsx(
-        "px-5 py-4",
-        tone === "positive" && "border-positive/15 bg-positive-tint/40"
-      )}
-    >
-      <p className="text-body-sm text-steel">{label}</p>
+    <Card className="q-reveal q-card-hover rounded-[20px] p-5" style={{ ["--i" as string]: index }}>
+      <div className="flex items-center gap-2.5">
+        {icon && (
+          <span className="grid h-[30px] w-[30px] place-items-center rounded-[9px] border border-white/[0.07] bg-white/[0.05] text-ink">{icon}</span>
+        )}
+        <p className="text-[13px] text-steel">{label}</p>
+      </div>
       <p
         className={clsx(
-          "mt-1.5 text-heading-sm font-[485] tabular-nums",
-          tone === "positive" ? "text-positive" : "text-ink"
+          "q-num mt-3 text-[26px] font-semibold tracking-[-0.03em]",
+          tone === "positive" ? "text-positive" : tone === "negative" ? "text-negative" : tone === "warning" ? "text-warning" : "text-ink"
         )}
       >
         {value}
       </p>
-      {caption && <p className="mt-1 text-caption text-steel">{caption}</p>}
+      {caption && <p className="mt-1.5 text-[12.5px] text-steel">{caption}</p>}
     </Card>
   );
 }

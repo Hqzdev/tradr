@@ -7,18 +7,18 @@ import clsx from "@/lib/clsx";
 export function SkeletonLine({ className }: { className?: string }) {
   return (
     <div
-      className={clsx("animate-pulse rounded-[6px] bg-[#ECE7EF]", className ?? "h-3 w-full")}
+      className={clsx("animate-pulse rounded-[6px] bg-white/[0.06]", className ?? "h-3 w-full")}
     />
   );
 }
 
 export function SkeletonCircle({ className }: { className?: string }) {
-  return <div className={clsx("animate-pulse rounded-full bg-[#ECE7EF]", className ?? "h-8 w-8")} />;
+  return <div className={clsx("animate-pulse rounded-full bg-white/[0.06]", className ?? "h-8 w-8")} />;
 }
 
 export function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div className={clsx("rounded-card border border-bone bg-[#F2EDF4] p-6", className)}>
+    <div className={clsx("rounded-card border border-bone bg-white/[0.03] p-6", className)}>
       <SkeletonLine className="h-3 w-1/3" />
       <SkeletonLine className="mt-3 h-6 w-2/3" />
       <SkeletonLine className="mt-2 h-3 w-1/4" />
@@ -50,8 +50,8 @@ export function SkeletonStatGrid({ count = 4 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="rounded-card border border-bone bg-white p-5">
-          <SkeletonLine className="h-2.5 w-1/2 bg-[#F2EDF4]" />
+        <div key={i} className="q-card rounded-[20px] p-5">
+          <SkeletonLine className="h-2.5 w-1/2 bg-white/[0.03]" />
           <SkeletonLine className="mt-3 h-5 w-2/3" />
         </div>
       ))}

@@ -237,7 +237,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className={`tradr-landing ${pageActive ? "" : "tradr-landing--paused"}`}>
+    <main className={`theme-dark tradr-landing ${pageActive ? "" : "tradr-landing--paused"}`}>
       <nav className={`tradr-nav ${scrolled ? "tradr-nav--scrolled" : ""}`} aria-label="Основная навигация">
         <Link className="tradr-brand" href="#hero" aria-label="TRADR — главная"><IconLogo aria-hidden="true" /></Link>
         <div className="tradr-nav-links">

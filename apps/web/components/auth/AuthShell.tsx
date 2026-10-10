@@ -15,7 +15,7 @@ const ORBS: { ticker: StockTicker; className: string }[] = [
 
 export default function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <div className="tradr-auth-shell">
+    <div className="theme-dark tradr-auth-shell">
       <div className="tradr-auth-orbits" aria-hidden="true">
         {ORBS.map(({ ticker, className }, index) => {
           const stock = stockCatalog[ticker];

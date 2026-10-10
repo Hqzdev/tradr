@@ -43,6 +43,29 @@ import {
   TrophyIcon,
   Wallet01Icon,
   WifiOff01Icon,
+  SparklesIcon,
+  Logout03Icon,
+  Home01Icon,
+  ArrowRight01Icon,
+  ArrowDownRight01Icon,
+  Clock01Icon,
+  Activity01Icon,
+  Notification01Icon,
+  Target02Icon,
+  CrownIcon,
+  FlashIcon,
+  InfinityIcon,
+  SquareLock02Icon,
+  CommandIcon,
+  EyeIcon,
+  SentIcon,
+  MoreVerticalIcon,
+  ChartUpIcon,
+  ChartDownIcon,
+  Coins01Icon,
+  Exchange01Icon,
+  AiBrain01Icon,
+  PieChartIcon,
 } from "@hugeicons/core-free-icons";
 
 // All icons in this file are rendered through Hugeicons
@@ -110,3 +133,27 @@ export const IconWifiOff = huge(WifiOff01Icon);
 export const IconRefresh = huge(ArrowReloadHorizontalIcon);
 export const IconLoading = huge(Loading03Icon);
 export const IconInbox = huge(InboxIcon);
+export const IconSparkles = huge(SparklesIcon);
+export const IconLogout = huge(Logout03Icon);
+export const IconHome = huge(Home01Icon);
+export const IconArrowRight = huge(ArrowRight01Icon);
+export const IconArrowDownRight = huge(ArrowDownRight01Icon);
+export const IconClock = huge(Clock01Icon);
+export const IconActivity = huge(Activity01Icon);
+export const IconBell = huge(Notification01Icon);
+export const IconTarget = huge(Target02Icon);
+export const IconCrown = huge(CrownIcon);
+export const IconFlash = huge(FlashIcon);
+export const IconInfinity = huge(InfinityIcon);
+export const IconLock = huge(SquareLock02Icon);
+export const IconCommand = huge(CommandIcon);
+export const IconEye = huge(EyeIcon);
+export const IconSend = huge(SentIcon);
+export const IconMore = huge(MoreVerticalIcon);
+export const IconChartUp = huge(ChartUpIcon);
+export const IconChartDown = huge(ChartDownIcon);
+export const IconCoins = huge(Coins01Icon);
+export const IconExchange = huge(Exchange01Icon);
+export const IconBrain = huge(AiBrain01Icon);
+export const IconPieChart = huge(PieChartIcon);
+export const IconWallet = huge(Wallet01Icon);

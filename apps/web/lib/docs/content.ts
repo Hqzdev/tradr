@@ -71,7 +71,7 @@ export const docsPages: DocPage[] = [
         title: "Коротко",
         bullets: [
           "Каждый новый пользователь получает учебный счёт на $100 000. Это не реальные деньги.",
-          "Главная цель по умолчанию — увеличить общий капитал до $110 000, то есть заработать 10%.",
+          "Цель растёт по уровням: $110 000, $120 000, $150 000, $200 000, $300 000, $500 000, затем $1 млн и выше.",
           "Торговать вручную нельзя. Все покупки и продажи выполняют только агенты.",
           "Пользователь выбирает стратегию и бюджет агента, запускает его и следит за результатом.",
           "Каждое решение сохраняется: видно, что агент сделал, с какой акцией и по какой причине.",
@@ -84,7 +84,7 @@ export const docsPages: DocPage[] = [
         entries: [
           { path: "Общий капитал", description: "Резерв пользователя плюс деньги и текущая стоимость позиций всех агентов." },
           { path: "Прибыль или убыток", description: "Разница между текущим капиталом и стартовыми $100 000." },
-          { path: "Прогресс цели", description: "Насколько пользователь приблизился к выбранной сумме или проценту роста." },
+          { path: "Прогресс цели", description: "Текущий уровень и прогресс к следующему порогу капитала. За уровень начисляется растущая награда." },
           { path: "Лента решений", description: "Анализ, ожидание, покупка и продажа с именем ответственного агента." },
         ],
       },
@@ -441,7 +441,7 @@ export const docsPages: DocPage[] = [
         id: "product",
         title: "Главные экраны",
         entries: [
-          { path: "DashboardScreen.tsx", description: "Загружает результат, редактирует цель и меняет ускорение." },
+          { path: "DashboardScreen.tsx", description: "Показывает уровень и автоматическую цель, меняет скорость симуляции." },
           { path: "AgentsListScreen.tsx", description: "Показывает агентов, статус и капитал." },
           { path: "AgentDetailScreen.tsx", description: "Позиции, доходность, журнал и управление агентом." },
           { path: "MarketScreen.tsx", description: "Каталог акций и переход к аналитике." },
@@ -792,7 +792,7 @@ export const docsPages: DocPage[] = [
         title: "Три модели",
         entries: [
           { path: "User.java", description: "Уникальный e-mail, BCrypt-хэш пароля, отображаемое имя и дата создания. passwordHash не выходит в API-ответы.", href: "https://github.com/Hqzdev/tradr/blob/main/apps/backend/src/main/java/dev/tradr/backend/auth/domain/User.java" },
-          { path: "Account.java", description: "Один учебный счёт на пользователя: резерв денег, стартовый баланс, валюта, цель капитала и настройка ускорения. debit и credit меняют только резерв.", href: "https://github.com/Hqzdev/tradr/blob/main/apps/backend/src/main/java/dev/tradr/backend/auth/domain/Account.java" },
+          { path: "Account.java", description: "Один учебный счёт на пользователя: резерв денег, стартовый баланс, валюта, уровень, автоматическая цель капитала и настройка ускорения. debit и credit меняют только резерв.", href: "https://github.com/Hqzdev/tradr/blob/main/apps/backend/src/main/java/dev/tradr/backend/auth/domain/Account.java" },
           { path: "RefreshToken.java", description: "ID пользователя, хэш refresh-токена, срок действия, дата отзыва и создания. revoke ставит время отзыва вместо удаления истории.", href: "https://github.com/Hqzdev/tradr/blob/main/apps/backend/src/main/java/dev/tradr/backend/auth/domain/RefreshToken.java" },
         ],
       },
@@ -1085,8 +1085,7 @@ export const docsPages: DocPage[] = [
         id: "preferences",
         title: "Настройки счёта",
         entries: [
-          { path: "PATCH /api/v1/account/preferences", description: "Меняет goalValue и/или accelerationEnabled." },
-          { path: "goalValue", description: "Целевая сумма от $1 000 до $10 000 000." },
+          { path: "PATCH /api/v1/account/preferences", description: "Меняет только accelerationEnabled. Цель и уровень растут автоматически." },
           { path: "accelerationEnabled", description: "Одна настройка для всех агентов аккаунта." },
         ],
       },

@@ -19,11 +19,13 @@ export interface Dashboard {
   profitPercent: number;
   goalValue: number;
   goalProgress: number;
+  level: number;
+  nextLevelReward: number;
   accelerationEnabled: boolean;
   agents: ApiAgent[];
   activity: DashboardActivity[];
 }
 
 export const getDashboard = () => apiFetch<Dashboard>("/dashboard");
-export const updatePreferences = (input: { goalValue?: number; accelerationEnabled?: boolean }) =>
+export const updatePreferences = (input: { accelerationEnabled?: boolean }) =>
   apiFetch<Dashboard>("/account/preferences", { method: "PATCH", body: JSON.stringify(input) });

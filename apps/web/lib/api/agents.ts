@@ -49,4 +49,5 @@ export interface AgentPerformance { agentId: string; initialCapital: number; cas
 export const getAgentPerformance = (id: string) => apiFetch<AgentPerformance>(`/agents/${id}/performance`);
 export const getAgentLog = (id: string, limit = 50) => apiFetch<AgentDecision[]>(`/agents/${id}/log?limit=${limit}`);
 export const closeAgent = (id: string) => apiFetch<void>(`/agents/${id}/close`, { method: "POST" });
+export const withdrawAgentProfit = (id: string) => apiFetch<ApiAgent>(`/agents/${id}/withdraw-profit`, { method: "POST" });
 export const updateAgentAllocation = (id: string, budgetLimit: number) => apiFetch<ApiAgent>(`/agents/${id}/allocation`, { method: "PATCH", body: JSON.stringify({ budgetLimit }) });

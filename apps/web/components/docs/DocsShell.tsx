@@ -237,7 +237,7 @@ export default function DocsShell({ page }: DocsShellProps) {
   };
 
   return (
-    <div className="tradr-docs">
+    <div className="theme-dark tradr-docs">
       <header className="docs-header">
         <div className="docs-primary-bar">
           <div className="docs-brand">

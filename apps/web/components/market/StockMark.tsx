@@ -4,7 +4,7 @@ import type { StockProfile } from "@/lib/stocks";
 export default function StockMark({ stock, size = 48 }: { stock: StockProfile; size?: number }) {
   return (
     <span
-      className="grid shrink-0 place-items-center overflow-hidden rounded-full border border-white/70 shadow-soft"
+      className="grid shrink-0 place-items-center overflow-hidden rounded-full ring-1 ring-white/10"
       style={{ width: size, height: size, background: stock.color }}
     >
       <Image

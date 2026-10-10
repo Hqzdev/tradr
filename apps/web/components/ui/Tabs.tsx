@@ -37,7 +37,7 @@ export default function Tabs({
   }, []);
 
   return (
-    <div className="relative flex items-center gap-6 border-b border-bone">
+    <div className="relative flex items-center gap-7 border-b border-white/[0.07]">
       {options.map((opt, index) => {
         const active = opt === value;
         return (
@@ -48,7 +48,7 @@ export default function Tabs({
             }}
             onClick={() => onChange(opt)}
             className={clsx(
-              "press-98 focus-ring -mb-px pb-3 text-body-sm font-[485] transition-colors duration-150",
+              "press-98 focus-ring -mb-px pb-3 text-[15px] font-medium transition-colors duration-200",
               active ? "text-ink" : "text-steel hover:text-ink"
             )}
           >
@@ -59,8 +59,8 @@ export default function Tabs({
       <span
         aria-hidden
         className={clsx(
-          "absolute -bottom-px left-0 h-[2px] rounded-full bg-magenta",
-          animated && "transition-all duration-200 ease-out"
+          "absolute -bottom-px left-0 h-[2px] rounded-full bg-ink",
+          animated && "transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
         )}
         style={{
           width: lineStyle ? `${lineStyle.width}px` : 0,

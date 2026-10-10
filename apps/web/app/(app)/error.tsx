@@ -24,12 +24,11 @@ export default function AppError({ reset }: { error: Error & { digest?: string }
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center">
-      <Card className="w-full max-w-[420px] p-8 text-center">
+      <Card className="q-pop w-full max-w-[420px] p-8 text-center">
         <span
-          className="mx-auto flex h-12 w-12 items-center justify-center rounded-full"
-          style={{ backgroundColor: "#FFF3F4" }}
+          className="mx-auto flex h-12 w-12 items-center justify-center rounded-[14px] border border-negative/30 bg-negative/[0.12]"
         >
-          <IconAlertCircle className="h-5 w-5" style={{ color: "#B63449" }} />
+          <IconAlertCircle className="h-5 w-5 text-negative" />
         </span>
 
         <p className="mt-4 text-subheading font-[485] text-ink">Нет соединения с сервером</p>
@@ -38,7 +37,7 @@ export default function AppError({ reset }: { error: Error & { digest?: string }
           восстановлена.
         </p>
 
-        <div className="mt-5 flex items-center justify-center gap-2 rounded-btn bg-bone/60 px-3.5 py-2.5 text-caption text-steel">
+        <div className="mt-5 flex items-center justify-center gap-2 rounded-[12px] border border-white/[0.07] bg-white/[0.03] px-3.5 py-2.5 text-caption text-steel">
           {!exhausted ? (
             <IconLoading className="h-3.5 w-3.5 animate-spin800 text-fog" />
           ) : (

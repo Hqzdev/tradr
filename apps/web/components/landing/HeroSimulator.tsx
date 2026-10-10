@@ -83,7 +83,7 @@ function StockSelector({ selected, onSelect }: { selected: StockTicker; onSelect
         <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} aria-hidden="true" />
       </button>
       {open && createPortal(
-        <div className="tradr-stock-picker-layer" role="presentation">
+        <div className="theme-dark tradr-stock-picker-layer" role="presentation">
           <button className="tradr-stock-picker-backdrop" type="button" aria-label="Закрыть выбор акции" onClick={() => setOpen(false)} />
           <section className="tradr-stock-picker" role="dialog" aria-modal="true" aria-labelledby="stock-picker-title">
             <header>

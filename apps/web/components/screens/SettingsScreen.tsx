@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
+import PageHeader from "@/components/ui/PageHeader";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Toggle from "@/components/ui/Toggle";
@@ -114,21 +115,15 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
 
   return (
     <div>
-      <div>
-        <p className="text-caption font-[485] uppercase tracking-[0.02em] text-magenta-deep">
-          {meta.eyebrow}
-        </p>
-        <h1 className="mt-2 text-heading font-[485] text-ink">{meta.title}</h1>
-        <p className="mt-1.5 max-w-2xl text-body text-steel">{meta.lead}</p>
-      </div>
+      <PageHeader eyebrow={meta.eyebrow} title={meta.title} lead={meta.lead} />
 
-      <div className="mt-6 space-y-3">
+      <div key={section} className="mt-7 space-y-4">
         {section === "profile" && (
           <>
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Профиль</h2>
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 2 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Профиль</h2>
               <div className="mt-4 flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f2edf5] text-body-sm font-[535] text-[#6e5c76]">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.12] bg-[#18181d] text-[15px] font-semibold text-ink">
                   Я
                 </div>
                 <button className="press-98 focus-ring text-caption font-[485] text-magenta-deep hover:text-ink">
@@ -148,17 +143,17 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">О трейдере</h2>
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 3 }}>
+              <h2 className="text-[16px] font-semibold text-ink">О трейдере</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_220px]">
                 <label className="block">
-                  <span className="text-caption text-steel">О себе</span>
+                  <span className="text-[12.5px] text-steel">О себе</span>
                   <textarea
                     rows={3}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Пара слов о вашем стиле торговли — видно только вам."
-                    className="focus-ring mt-1.5 w-full resize-none rounded-btn border border-bone bg-white px-3 py-2.5 text-body-sm text-ink outline-none transition-colors duration-150 focus:border-magenta"
+                    className="focus-ring mt-2 w-full resize-none rounded-[12px] border border-white/[0.1] bg-white/[0.03] px-3.5 py-3 text-[14.5px] text-ink outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-fog focus:border-magenta/70 focus:shadow-[0_0_0_4px_rgba(108,92,255,0.12)]"
                   />
                 </label>
                 <Select
@@ -174,9 +169,9 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
 
         {section === "notifications" && (
           <>
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Сделки агентов</h2>
-              <div className="mt-2 divide-y divide-bone">
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 4 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Сделки агентов</h2>
+              <div className="mt-2 divide-y divide-white/[0.06]">
                 <Toggle
                   label="Уведомлять о всех сделках агентов"
                   checked={notifyTrades}
@@ -196,9 +191,9 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Отчёты</h2>
-              <div className="mt-2 divide-y divide-bone">
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 1 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Отчёты</h2>
+              <div className="mt-2 divide-y divide-white/[0.06]">
                 <Toggle
                   label="Еженедельный отчёт на email"
                   checked={weeklyReport}
@@ -212,9 +207,9 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Рынок</h2>
-              <div className="mt-2 divide-y divide-bone">
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 2 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Рынок</h2>
+              <div className="mt-2 divide-y divide-white/[0.06]">
                 <Toggle
                   label="Ценовые алерты по избранным тикерам"
                   checked={priceAlerts}
@@ -232,9 +227,9 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
 
         {section === "security" && (
           <>
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Вход в аккаунт</h2>
-              <div className="mt-4 divide-y divide-bone">
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 3 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Вход в аккаунт</h2>
+              <div className="mt-4 divide-y divide-white/[0.06]">
                 <SecurityRow label="Пароль" detail="Изменён 3 месяца назад" action="Изменить" />
                 <SecurityRow
                   label="Двухфакторная аутентификация"
@@ -245,9 +240,9 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Сессии</h2>
-              <div className="mt-4 divide-y divide-bone">
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 4 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Сессии</h2>
+              <div className="mt-4 divide-y divide-white/[0.06]">
                 <SecurityRow label="Активные сессии" detail="2 устройства" action="Управлять" />
                 <SecurityRow label="История входов" detail="Последний вход сегодня" action="Смотреть" />
               </div>
@@ -257,15 +252,15 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
 
         {section === "trading" && (
           <>
-            <Card className="p-5">
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 1 }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-subheading font-[485] text-ink">Лимит риска на сделку</h2>
+                  <h2 className="text-[16px] font-semibold text-ink">Лимит риска на сделку</h2>
                   <p className="mt-1 text-caption text-steel">
                     Максимальная доля капитала, которой агент рискует в одной сделке.
                   </p>
                 </div>
-                <span className="text-caption font-[535] text-magenta-deep">{risk}%</span>
+                <span className="q-num rounded-full border border-magenta/40 bg-magenta/15 px-3 py-1 text-[14px] font-semibold text-magenta-deep">{risk}%</span>
               </div>
               <input
                 aria-label="Лимит риска"
@@ -274,12 +269,13 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
                 max="10"
                 value={risk}
                 onChange={(event) => setRisk(Number(event.target.value))}
-                className="mt-3 h-1.5 w-full cursor-pointer accent-magenta"
+                className="q-range mt-4 w-full cursor-pointer"
+                style={{ ["--fill" as string]: `${((risk - 1) / 9) * 100}%` }}
               />
             </Card>
 
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Правила исполнения</h2>
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 2 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Правила исполнения</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Select
                   label="Тип ордера по умолчанию"
@@ -288,7 +284,7 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
                   onChange={setOrderType}
                 />
               </div>
-              <div className="mt-2 divide-y divide-bone">
+              <div className="mt-2 divide-y divide-white/[0.06]">
                 <Toggle
                   label="Подтверждать каждую заявку вручную"
                   checked={manualReview}
@@ -307,8 +303,8 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
 
         {section === "data" && (
           <>
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Источник котировок</h2>
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 3 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Источник котировок</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Select
                   label="Источник рыночных данных"
@@ -333,8 +329,8 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Экспорт</h2>
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 4 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Экспорт</h2>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Button variant="outline">Выгрузить историю сделок (CSV)</Button>
                 <Button variant="outline">Выгрузить журнал агентов (CSV)</Button>
@@ -344,8 +340,8 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
         )}
 
         {section === "display" && (
-          <Card className="p-5">
-            <h2 className="text-subheading font-[485] text-ink">Валюта и регион</h2>
+          <Card className="q-reveal p-6" style={{ ["--i" as string]: 1 }}>
+            <h2 className="text-[16px] font-semibold text-ink">Валюта и регион</h2>
             <div className="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
               <Select label="Базовая валюта" value={currency} options={CURRENCY_OPTIONS} onChange={setCurrency} />
               <Select label="Язык интерфейса" value={language} options={LANGUAGE_OPTIONS} onChange={setLanguage} />
@@ -363,9 +359,9 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
 
         {section === "metrics" && (
           <>
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Показатели на дашборде агентов</h2>
-              <div className="mt-2 divide-y divide-bone">
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 2 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Показатели на дашборде агентов</h2>
+              <div className="mt-2 divide-y divide-white/[0.06]">
                 <Toggle label="Капитал под управлением" checked={showCapital} onChange={setShowCapital} />
                 <Toggle label="Средняя доходность" checked={showReturn} onChange={setShowReturn} />
                 <Toggle label="Сделок всего" checked={showTrades} onChange={setShowTrades} />
@@ -373,8 +369,8 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
               </div>
             </Card>
 
-            <Card className="p-5">
-              <h2 className="text-subheading font-[485] text-ink">Обновление и сравнение</h2>
+            <Card className="q-reveal p-6" style={{ ["--i" as string]: 3 }}>
+              <h2 className="text-[16px] font-semibold text-ink">Обновление и сравнение</h2>
               <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <Select
                   label="Интервал обновления показателей"
@@ -394,9 +390,9 @@ export default function SettingsScreen({ section }: { section: SettingsSection }
         )}
       </div>
 
-      <div className="mt-5 flex justify-end gap-3">
+      <div className="mt-6 flex justify-end gap-3">
         <Button variant="ghost">Отменить</Button>
-        <Button variant="primary" onClick={() => setSaved(true)}>
+        <Button variant={saved ? "success" : "primary"} onClick={() => setSaved(true)}>
           {saved ? "Сохранено" : "Сохранить изменения"}
         </Button>
       </div>
@@ -408,10 +404,10 @@ function SecurityRow({ label, detail, action }: { label: string; detail: string;
   return (
     <div className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
       <div>
-        <p className="text-body-sm text-ink">{label}</p>
-        <p className="mt-0.5 text-caption text-steel">{detail}</p>
+        <p className="text-[14.5px] text-ink">{label}</p>
+        <p className="mt-0.5 text-[12.5px] text-steel">{detail}</p>
       </div>
-      <button className="press-98 focus-ring text-caption font-[485] text-magenta-deep hover:text-ink">
+      <button className="press-98 focus-ring rounded-[10px] border border-white/[0.1] px-3 py-1.5 text-[12.5px] font-medium text-ink transition-colors hover:border-magenta/50 hover:text-magenta-deep">
         {action}
       </button>
     </div>

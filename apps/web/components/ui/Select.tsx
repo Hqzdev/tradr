@@ -39,7 +39,7 @@ export default function Select({ label, value, options, onChange, className }: S
 
   return (
     <div ref={rootRef} className={clsx("relative", className)}>
-      {label && <span className="block text-caption text-steel">{label}</span>}
+      {label && <span className="block text-[12.5px] text-steel">{label}</span>}
 
       <button
         type="button"
@@ -47,15 +47,15 @@ export default function Select({ label, value, options, onChange, className }: S
         aria-haspopup="listbox"
         aria-expanded={open}
         className={clsx(
-          "press-98 focus-ring flex h-10 w-full items-center justify-between gap-2 rounded-btn border bg-white px-3 text-left text-body-sm text-ink transition-colors duration-150",
-          label && "mt-1.5",
-          open ? "border-magenta" : "border-bone hover:border-fog/60"
+          "press-98 focus-ring flex h-11 w-full items-center justify-between gap-2 rounded-[12px] border bg-white/[0.03] px-3.5 text-left text-[14.5px] text-ink transition-[border-color,background-color,box-shadow] duration-200",
+          label && "mt-2",
+          open ? "border-magenta/70 bg-white/[0.045] shadow-[0_0_0_4px_rgba(108,92,255,0.12)]" : "border-white/[0.1] hover:border-white/[0.18]"
         )}
       >
         <span className="truncate">{value}</span>
         <IconChevronDown
           className={clsx(
-            "h-4 w-4 shrink-0 text-steel transition-transform duration-150",
+            "h-4 w-4 shrink-0 text-steel transition-transform duration-300",
             open && "rotate-180 text-magenta-deep"
           )}
         />
@@ -64,7 +64,7 @@ export default function Select({ label, value, options, onChange, className }: S
       {open && (
         <div
           role="listbox"
-          className="animate-scale-in absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 overflow-auto rounded-card border border-bone bg-white p-1.5 shadow-elevated"
+          className="animate-scale-in absolute left-0 right-0 top-[calc(100%+6px)] z-30 max-h-64 origin-top overflow-auto rounded-[14px] border border-white/[0.1] bg-[#16161b] p-1.5 shadow-elevated"
         >
           {options.map((option) => {
             const active = option === value;
@@ -79,8 +79,8 @@ export default function Select({ label, value, options, onChange, className }: S
                   setOpen(false);
                 }}
                 className={clsx(
-                  "flex w-full items-center justify-between gap-2 rounded-[10px] px-3 py-2 text-left text-body-sm transition-colors duration-120",
-                  active ? "bg-magenta-tint font-[535] text-magenta-deep" : "text-ink hover:bg-bone/70"
+                  "flex w-full items-center justify-between gap-2 rounded-[10px] px-3 py-2.5 text-left text-[14px] transition-colors duration-150",
+                  active ? "bg-magenta/15 font-medium text-magenta-deep" : "text-ink hover:bg-white/[0.05]"
                 )}
               >
                 <span className="truncate">{option}</span>

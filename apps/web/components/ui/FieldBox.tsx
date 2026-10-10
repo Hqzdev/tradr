@@ -54,10 +54,10 @@ export default function FieldBox({
   const shownValue = animated && !focused ? tickedText : value;
 
   return (
-    <div className="focus-within:ring-2 focus-within:ring-magenta-ring focus-within:border-magenta rounded-btn border border-bone px-4 py-2.5 transition-all duration-150">
+    <div className="rounded-[14px] border border-white/[0.1] bg-white/[0.03] px-4 py-3 transition-[border-color,background-color,box-shadow] duration-200 hover:border-white/[0.16] focus-within:border-magenta/70 focus-within:bg-white/[0.045] focus-within:shadow-[0_0_0_4px_rgba(108,92,255,0.12)]">
       <div className="flex items-center justify-between">
-        <span className="text-caption text-steel">{label}</span>
-        {unit && <span className="text-caption text-steel">{unit}</span>}
+        <span className="text-[12.5px] text-steel">{label}</span>
+        {unit && <span className="text-[12.5px] text-steel">{unit}</span>}
       </div>
       <input
         aria-label={label}
@@ -76,7 +76,7 @@ export default function FieldBox({
         className={
           large
             ? "mt-0.5 w-full bg-transparent text-heading-sm font-[485] tabular-nums text-ink outline-none"
-            : "mt-0.5 w-full bg-transparent text-body font-[485] tabular-nums text-ink outline-none"
+            : "mt-1 w-full bg-transparent text-[16px] font-medium tabular-nums text-ink outline-none"
         }
       />
     </div>
